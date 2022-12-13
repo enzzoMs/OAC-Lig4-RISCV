@@ -29,3 +29,40 @@ PRINT_TELA:
 	ret 
 	
 # ====================================================================================================== #
+																	
+CALCULAR_ENDERECO:
+	# Procedimento que calcula um endereço em um frame ou em uma imagem
+	# Argumentos: 
+	#	a0 = endereço do base do frame ou imagem
+	# 	a1 = numero da coluna onde calcular o endereço
+	# 	a2 = numero da linha onde calcular o endereço
+	# a0 = retorno com o endereço
+	
+	li t0, 320			# t0 = 320
+	
+	mul t0, a2, t0			# t0 = linha x 320
+	add a0, a0, a1			# a0 = enderço base + coluna	
+	add a0, a0, t0			# a0 = enderço base + coluna + (linha x 320)
+
+	ret 
+	
+# ====================================================================================================== #
+
+VERIFICAR_TECLA_APERTADA:
+	# Procedimento que verifica se alguma tecla foi apertada
+	# Retorna a0 com o valor da tecla ou a0 = -1 caso nenhuma tecla tenha sido apertada		
+	
+	li a0, -1 		# a0 = -1
+	 
+	li t0, 0xFF200000	# carrega em t0 o endereço de controle do KDMMIO
+ 	lw t1, 0(t0)		# carrega em t1 o valor do endereço de t0
+   	andi t1, t1, 1		# (t1 == 0) = não tem tecla, (t1 == 1) = tem tecla. 
+   				# realiza operação andi de forma a deixar em t0 somente o bit necessario para análise
+   	
+    	beq t1, zero, FIM_VERIFICAR_TECLA	# (t1 == 0) = não tem tecla pressionada então vai para fim
+   		lw a0, 4(t0)				# le o valor da tecla no endereço 0xFF200004
+   		 	
+	FIM_VERIFICAR_TECLA:					
+		ret
+			
+# ====================================================================================================== #		
