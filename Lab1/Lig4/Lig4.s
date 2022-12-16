@@ -14,6 +14,10 @@
 #	s0 = cor das peças selecionada pelo jogador, de modo que:					 #
 #		[ 0 ] = peças da cor VERMELHA								 # 
 #		[ Qualquer outro valor] = peças da cor AMARELA						 #
+#	s1 = dificuldade selecionada pelo jogador, de modo que:					 	 #
+#		[ 0 ] = FACIL										 # 
+#		[ 1 ] = MEDIO										 # 
+#		[ Qualquer outro valor] = DIFICIL							 #
 #													 #											 
 # ====================================================================================================== #
 # Observações:											         #
