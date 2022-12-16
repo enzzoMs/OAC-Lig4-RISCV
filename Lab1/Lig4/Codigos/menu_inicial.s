@@ -72,11 +72,13 @@ RENDERIZAR_ESCOLHA_COR:
 		# dependendo do input do usuário
 		
 		li t0, 'w'
-		mv t1, t4
+		mv t1, t4				# prepara t1 com o valor da próxima opção
 		beq a0, t0, SELECIONAR_COR
 		li t0, 's'
-		mv t1, t5
+		mv t1, t5				# prepara t1 com o valor da próxima opção
 		beq a0, t0, SELECIONAR_COR
+		li t0, 10				# t0 = valor da tecla enter
+		beq a0, t0, FIM_LOOP_SELECIONAR_COR	# Se o ENTER foi apertado, termina o loop
 		j LOOP_SELECIONAR_COR
 		
 		SELECIONAR_COR:
@@ -102,7 +104,14 @@ RENDERIZAR_ESCOLHA_COR:
 			call SELECIONAR_OPCAO_MENU
 			
 			j LOOP_SELECIONAR_COR
-				
+			
+	FIM_LOOP_SELECIONAR_COR:
+			
+	slt s0, t4, t6		# é garantido que o endereço de t5 é maior que o de t4
+				# dessa forma, através do slt s0 recebe 0 se t6 == t4,
+				# e 1 caso t6 == t5, portanto s0 foi atualizado com
+				# o valor da opção selecionada, tal como convencionado									
+																									
 	lw ra, (sp)		# desempilha ra
 	addi sp, sp, 4		# remove 1 word da pilha
 	

@@ -8,6 +8,14 @@
 # adquados para renderizar os elementos visuais.							 #
 #													 #										 #
 # ====================================================================================================== #
+# 				    TABELA DE REGISTRADORES SALVOS					 #
+# ====================================================================================================== #
+#													 #
+#	s0 = cor das peças selecionada pelo jogador, de modo que:					 #
+#		[ 0 ] = peças da cor VERMELHA								 # 
+#		[ Qualquer outro valor] = peças da cor AMARELA						 #
+#													 #											 
+# ====================================================================================================== #
 # Observações:											         #
 # 													 #
 # -> Este é o arquivo principal do jogo e através dele são chamados outros procedimentos para a execução #  
