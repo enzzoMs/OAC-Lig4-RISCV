@@ -29,7 +29,36 @@ PRINT_TELA:
 	ret 
 	
 # ====================================================================================================== #
-																	
+
+PRINT_IMG:
+	# Procedimento que imprime imagens de tamanho variado, menores que 320 x 240, no frame de escolha
+	# Argumentos: 
+	# 	a0 = endereço da imagem		
+	# 	a1 = endereço de onde, no frame escolhido, a imagem deve ser renderizada
+	# 	a2 = numero de colunas da imagem
+	#	a3 = numero de linhas da imagem
+	
+	PRINT_IMG_LINHAS:
+		mv t0, a2		# copia do numero de a2 para usar no loop de colunas
+			
+		PRINT_IMG_COLUNAS:
+			lb t1, 0(a0)			# pega 1 pixel do .data e coloca em t1
+			sb t1, 0(a1)			# pega o pixel de t1 e coloca no bitmap
+	
+			addi t0, t0, -1			# decrementa o numero de colunas restantes
+			addi a0, a0, 1			# vai para o próximo pixel da imagem
+			addi a1, a1, 1			# vai para o próximo pixel do bitmap
+			bne t0, zero, PRINT_IMG_COLUNAS	# reinicia o loop se t0 != 0
+			
+		addi a3, a3, -1			# decrementando o numero de linhas restantes
+		sub a1, a1, a2			# volta o endeço do bitmap pelo numero de colunas impressas
+		addi a1, a1, 320		# passa o endereço do bitmap para a proxima linha
+		bne a3, zero, PRINT_IMG_LINHAS	# reinicia o loop se a3 != 0
+			
+	ret
+
+# ====================================================================================================== #
+																																	
 CALCULAR_ENDERECO:
 	# Procedimento que calcula um endereço em um frame ou em uma imagem
 	# Argumentos: 

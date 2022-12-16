@@ -13,11 +13,11 @@
 #													 #
 #	s0 = cor das peças selecionada pelo jogador, de modo que:					 #
 #		[ 0 ] = peças da cor VERMELHA								 # 
-#		[ Qualquer outro valor] = peças da cor AMARELA						 #
+#		[ 1 ] = peças da cor AMARELA								 #
 #	s1 = dificuldade selecionada pelo jogador, de modo que:					 	 #
 #		[ 0 ] = FACIL										 # 
 #		[ 1 ] = MEDIO										 # 
-#		[ Qualquer outro valor] = DIFICIL							 #
+#		[ 2 ] = DIFICIL										 #
 #													 #											 
 # ====================================================================================================== #
 # Observações:											         #
@@ -31,6 +31,7 @@
 
 call INICIALIZAR_MENU_INICIAL		# Chama o procedimento em menu_inicial.s
 
+call INICIALIZAR_TABULEIRO		# Chama o procedimento em tabuleiro.s
 
 
 loop : j loop	 # loop eterno 
@@ -39,4 +40,5 @@ loop : j loop	 # loop eterno
 
 .data
 	.include "Codigos/menu_inicial.s"
+	.include "Codigos/tabuleiro.s"
 	.include "Codigos/procedimentos_auxiliares.s"
