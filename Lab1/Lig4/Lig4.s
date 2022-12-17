@@ -33,12 +33,15 @@ call INICIALIZAR_MENU_INICIAL		# Chama o procedimento em menu_inicial.s
 
 call INICIALIZAR_TABULEIRO		# Chama o procedimento em tabuleiro.s
 
-
-loop : j loop	 # loop eterno 
-
+LOOP_PRINCIPAL_JOGO:
+	call TURNO_JOGADOR		# Chama o procedimento me movimentos_turnos.s
+	
+	j  LOOP_PRINCIPAL_JOGO
+	
 # ====================================================================================================== #
 
 .data
 	.include "Codigos/menu_inicial.s"
 	.include "Codigos/tabuleiro.s"
+	.include "Codigos/movimentos_turnos.s"
 	.include "Codigos/procedimentos_auxiliares.s"

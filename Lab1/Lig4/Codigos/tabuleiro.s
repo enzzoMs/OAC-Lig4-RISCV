@@ -5,7 +5,8 @@
 # ------------------------------------------------------------------------------------------------------ #
 # 													 #
 # Código responsável por inicializar o tabuleiro do jogo, com a renderização do menu do tabuleiro de	 # 
-# acordo com as escolhas feitas pelo jogador								 #
+# acordo com as escolhas feitas pelo jogador, além de trabalhar a lógica de interação entre o usuário e	 #
+# o tabuleiro										       		 #
 #													 #
 # ====================================================================================================== #
 
@@ -53,7 +54,7 @@ INICIALIZAR_TABULEIRO:
 	la t2, pecas_menu		# carrega a imagem base em a0
 	addi t2, t2, 8			# pula para onde começa os pixels no .data
 	
-	addi t3, t2, 210		# passa t3 para a próxima imagem
+	addi t3, t2, 182		# passa t3 para a próxima imagem
 	
 	# De acordo com o acima t2 tem o endereço da peça VERMELHA e t3 da peça AMARELA
 	# Agora é necessário decidir qual é a peça do jogador e qual é do computador
@@ -78,8 +79,8 @@ INICIALIZAR_TABULEIRO:
 	# Imprime a peça no menu
 		mv a0, t2 		# move para a0 o endereço de t2
 	 	# a1 tem o endereço de onde a imagem deve ser renderizada
-		li a2, 15 			# numero de colunas da imagem
-		li a3, 14 			# numero de linhas da imagem
+		li a2, 14 			# numero de colunas da imagem
+		li a3, 13 			# numero de linhas da imagem
 		call PRINT_IMG
 
 	# Calculando o endereço onde colocar a cor da peça do computador no menu
@@ -93,8 +94,8 @@ INICIALIZAR_TABULEIRO:
 	# Imprime a peça no menu
 		mv a0, t3 		# move para a0 o endereço de t3
 	 	# a1 tem o endereço de onde a imagem deve ser renderizada
-		li a2, 15 		# numero de colunas da imagem
-		li a3, 14 		# numero de linhas da imagem
+		li a2, 14 		# numero de colunas da imagem
+		li a3, 13 		# numero de linhas da imagem
 		call PRINT_IMG
 
 	lw ra, (sp)		# desempilha ra
