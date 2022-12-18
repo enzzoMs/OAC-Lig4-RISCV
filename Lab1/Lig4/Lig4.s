@@ -34,7 +34,9 @@ call INICIALIZAR_MENU_INICIAL		# Chama o procedimento em menu_inicial.s
 call INICIALIZAR_TABULEIRO		# Chama o procedimento em tabuleiro.s
 
 LOOP_PRINCIPAL_JOGO:
-	call TURNO_JOGADOR		# Chama o procedimento me movimentos_turnos.s
+	call TURNO_JOGADOR		# Chama o procedimento em movimentos_turnos.s
+	
+	call TURNO_COMPUTADOR		# Chama o procedimento em movimentos_turnos.s
 	
 	j  LOOP_PRINCIPAL_JOGO
 	

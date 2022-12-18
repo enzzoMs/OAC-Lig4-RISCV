@@ -143,7 +143,7 @@ TURNO_JOGADOR:
 	call PRINT_IMG
 	
 	# É necessário renderizar a peça descendo pela coluna do tabuleiro
-	addi a1, t4, 642	# passa para o argumento a0 o endereço de t4 (endereço da coluna atual) mais
+	addi a1, t4, 642	# passa para o argumento a1 o endereço de t4 (endereço da coluna atual) mais
 				# 962 de forma que a0 tem o endereço somente da imagem da peça
 				
 	la a0, pecas_tabuleiro	# carrega a imagem
@@ -162,6 +162,145 @@ TURNO_JOGADOR:
 	
 	ret	
 
+# ====================================================================================================== #
+
+TURNO_COMPUTADOR:
+	# Procedimento responsável por coordenar o turno do computador, incluindo a chamada de procedimentos
+	# para decidir qual a jogada dependendo da dificuldade escolhida.
+
+	addi sp, sp, -4		# cria espaço para 1 word na pilha
+	sw ra, 0(sp)		# empilha ra
+	
+	# Antes de tudo imprime uma imagem da peça do computador na seçção TURNO
+	# da tela do tabuleiro
+	
+	# Calcula o endereço da secção TURNO do tabuleiro
+		li a0, 0xFF000000	# Selecionando como argumento o frame 0
+		li a1, 174		# a1 = número da coluna onde começa a imagem = 174
+		li a2, 220		# a1 = número da linha onde começa a imagem  = 220
+		call CALCULAR_ENDERECO	
+	
+	mv a1, a0		# move para a1 o endereço retornado
+	
+	la a0, pecas_menu	# carrega a imagem em a0	
+	addi a0, a0, 8		# pula para onde começa os pixels no .data
+	
+	xori t0, s0, 1		# t0 recebe o inverso de s0
+	
+	li t1, 182		# para encontrar a imagem da peça do computador basta fazer
+	mul t1, t0, t1		# essa multiplicaçaõ. t1 tem a quantidade de pixels
+				# entre uma imagem e outra, de forma que o inverso de s0 (cor 
+	add a0, a0, t1		# escolhida pelo jogador) vai determinar quantos pixels é necessário 
+				# pular para encontrar a imagem certa da peça do computador 
+					
+	# Imprime na parte inferior da tela, na secção TURNO, a imagem da peça do computador
+	# a0 tem o endereço da imagem
+	# a1 tem o endereço de onde imprimir a imagem
+	li a2, 14		# número de colunas da imagem 
+	li a3, 13		# número de linhas da imagem 
+	call PRINT_IMG
+	
+	# Decide qual procedimento chamar de acordo com a dificuldade
+	
+	beq s1, zero, COMPUTADOR_JOGADA_FACIL
+	
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
+	
+	ret
+
+	COMPUTADOR_REALIZAR_JOGADA:	
+	
+	mv t2, a0	# salva o retorno em t2
+	
+	# Calculando o endereço onde começa a imagem da primeira seleção de coluna
+		li a0, 0xFF000000	# Selecionando como argumento o frame 0
+		li a1, 60		# a1 = número da coluna onde começa a imagem = 60
+		li a2, 52		# a1 = número da linha onde começa a imagem  = 52
+		call CALCULAR_ENDERECO	
+	
+	li t3, 30 		# t2 tem a quantidade de pixels de diferença entre uma coluna e outra
+		
+	mul t2, t2, t3		# através dessa multiplicação decide quantos pixels tem que ser pulados 
+				# para encontrar o endereço da coluna escolhida pelo computador
+	
+	add a1, a0, t2		# passa o endereço de a1 para o endereço da coluna escolhida pelo computador
+		
+	
+	la t0, selecao_colunas		# carrega a imagem em t5	
+	addi t0, t0, 8			# pula para onde começa os pixels no .data
+	addi t0, t0, 529		# pula para onde começa as imagens de seleção com peça no .data
+		
+	li t1, 529		# para encontrar a imagem de seleção correta de acordo com a cor do computador 
+	xori t2, s0, 1		# basta fazer essa multiplicação. 
+	mul t1, t2, t1		# 529 é a quantidade de pixels entre uma imagem de seleção e outra 
+				# O valor inverso de s0 (cor escolhida pelo jogador) vai determinar quantos 
+	add a0, t0, t1		# pixels é necessário pular para encontrar a imagem certa da peça do computador
+	
+	mv t2, a1		# salva em t2 o endereço de a1
+	
+	# Imprime a imagem de seleção na coluna escolhida pelo computador
+	# a0 tem o endereço da imagem de seleção
+	# a1 tem o endereço da coluna, ou seja, de onde imprimir a imagem
+	li a2, 23		# número de colunas da imagem 
+	li a3, 23		# número de linhas da imagem 
+	call PRINT_IMG
+	
+	# Espera alguns milisegundos	
+		li a7, 32			# selecionando syscall sleep	
+		li a0, 1000			# sleep por 1 s
+		ecall
+	
+	# Agora é necessário retirar a seleção da coluna antes de prosseguir
+	la a0, selecao_colunas	# carrega a imagem em a0
+	addi a0, a0, 8		# pula para onde começa os pixels .data
+	mv a1, t2		# a1 recebe o endereço da coluna selecionada		
+	li a2, 23		# número de colunas da imagem 
+	li a3, 23		# número de linhas da imagem 
+	call PRINT_IMG
+	
+	# É necessário renderizar a peça descendo pela coluna do tabuleiro
+	addi a1, t2, 642	# passa para o argumento a0 o endereço de t2 (endereço da coluna selecionada) mais
+				# 962 de forma que a0 tem o endereço somente da imagem da peça
+				
+	la a0, pecas_tabuleiro	# carrega a imagem
+	addi a0, a0, 8		# pula para onde começa os pixels no .data
+	
+	li t0, 361		# para encontrar a imagem de seleção correta de acordo com a cor do computador 
+	xori t1, s0, 1		# basta fazer essa multiplicação. 
+	mul t0, t1, t0		# 529 é a quantidade de pixels entre uma imagem de seleção e outra 
+				# O valor inverso de s0 (cor escolhida pelo jogador) vai determinar quantos 
+	add a0, a0, t0		# pixels é necessário pular para encontrar a imagem certa da peça do computador
+																																					
+	call DESCER_PECA
+	
+	
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
+	
+	ret		
+									
+# ====================================================================================================== #
+
+COMPUTADOR_JOGADA_FACIL:
+	# Procedimento que decide qual a proxima jogada do computador na dificuldade facil
+	# A jogada consiste em escolher em qual coluna, de 0 a 6, o computador vai inserir a peça
+	# Nesse nível de dificuldade a escolha da coluna é randomica
+	# Retorno:
+	# 	a0 = um número de 0 a 6 representando a coluna escolhida 
+	
+	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
+	# uma instrução de branch e a saída é sempre para o label 
+	
+	# Escolhe um numero randomico em 0 e 6
+	li a1, 7		# limite superior (nao inclusivo)
+	li a7, 42		# syscall RandIntRange
+	ecall
+
+	# a0 tem o retorno da ecall acima
+	
+	j COMPUTADOR_REALIZAR_JOGADA		
+	
 # ====================================================================================================== #
 
 DESCER_PECA:
