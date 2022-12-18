@@ -76,14 +76,14 @@ TURNO_JOGADOR:
 	li a3, 13		# número de linhas da imagem 
 	call PRINT_IMG
 	
-	
+	li t6, 0		# t6 guarda o numero da coluna (de 0 a 6) atualmente selecionada,
+				# de inicio a coluna selecioanda é a 0
+
 	# Inicialmente seleciona a primeira coluna 
-	mv a0, t5		# t5 tem o endereço da imagem de seleção com a cor do jogador
-	mv a1, t2		# t2 tem o endereço da primeira coluna
-	li a2, 23		# número de colunas da imagem 
-	li a3, 23		# número de linhas da imagem 
-	call PRINT_IMG
-			
+	li a1, 0		# a1 recebe 0 pois a coluna a ser seleciona é a atual
+	addi t1, t6, 0		# t1 recebe o valor da coluna atual
+	j SELECIONAR_COLUNA																							
+																																																																								
 	LOOP_TURNO_JOGADOR:
 		call VERIFICAR_TECLA_APERTADA
 		
@@ -91,37 +91,66 @@ TURNO_JOGADOR:
 		# dependendo do input do usuário
 		
 		li t0, 'a'
-		addi t1, t4, -30		# t1 vai receber o endereço da coluna atualmente selecionada (t4)
-						# menos 30, essencialmente passando para t1 o endereço
-						# da coluna a esquerda  				
+		li a1, -30	# a1 recebe -30 porque é o necessário para acessar o endereço da coluna 
+				# a esquerda da atual
+		addi t1, t6, -1			# t1 recebe o valor da coluna a esquerda 								
 		beq a0, t0, SELECIONAR_COLUNA
 		li t0, 'd'
-		addi t1, t4, 30			# t1 vai receber o endereço da coluna atualmente selecionada (t4)
-						# mais 30, essencialmente passando para t1 o endereço
-						# da coluna a direita  
+		li a1, 30	# a1 recebe 30 porque é o necessário para acessar o endereço da coluna 
+				# a direita da atual
+		addi t1, t6, 1			# t1 recebe o valor da coluna a direita 					
 		beq a0, t0, SELECIONAR_COLUNA
 		li t0, 10				# t0 = valor da tecla enter
 		beq a0, t0, FIM_LOOP_TURNO_JOGADOR	# Se o ENTER foi apertado, termina o loop
 		j LOOP_TURNO_JOGADOR
 		
 		SELECIONAR_COLUNA:
-			# Primeiro verifica se o endereço t1 está dentro dos limites, ou seja,
+			# Primeiro verifica se o endereço t0 está dentro dos limites, ou seja,
 			# se é maior que t2 (endereço da primeria coluna) e menor que t3(endereço da 
 			# última coluna), caso esteja fora nada deve acontecer
 			
-			blt t1, t2, LOOP_TURNO_JOGADOR
-			bgt t1, t3, LOOP_TURNO_JOGADOR
+			add t0, t4, a1	# t0 vai receber o endereço da coluna atualmente selecionada (t4)
+					# mais ou menos 30 (a1), essencialmente passando para t0 o endereço
+					# da coluna a direita ou esquerda, dependendo da tecla que foi
+					# apertada
+						
+			blt t0, t2, LOOP_TURNO_JOGADOR
+			bgt t0, t3, LOOP_TURNO_JOGADOR
 		
+			mv t6, t1		# atualiza o valor da coluna atual
+					
 			# Primeiramente é retirado a seleção da coluna atual			
 			la a0, selecao_colunas	# carrega a imagem em a0
 			addi a0, a0, 8		# pula para onde começa os pixels . data
-			mv a1, t4		# a1 recebe o endereço da coluna atual	
 			
-			mv t4, t1	# atualiza t4 com o endereço da próxima coluna que vai ser selecionada
-						
+			mv a1, t4		# passa para a1 o endereço da coluna atual
+			
+			mv t4, t0	# atualiza o endereço de t4 com o endereço da próxima coluna	
+		
 			li a2, 23		# número de colunas da imagem 
 			li a3, 23		# número de linhas da imagem 
 			call PRINT_IMG
+			
+			slli t0, t6, 2		# multiplica t6 por 4, já que cada word tem 4 bytes
+			add t0, t0, s2		# passa para t0 o endereço da coluna atual, de acordo com
+						# o vetor de colunas em s2
+			lw t1, 0(t0)		# pega o valor armazendo no vetor de colunas (numero de 
+						# peças restantes)
+		
+			# se t1 == 0 então não há mais espaço para peças nessa coluna, portanto
+			# nada deve acontecer e será impresso uma imagem com X na coluna
+			bne t1, zero, COLUNA_LIVRE
+				la a0, selecao_colunas	# carrega a imagem em a0
+				addi a0, a0, 8		# pula para onde começa os pixels . data
+				addi a0, a0, 1587	# pula para onde começa a imagem de seleção com X
+				mv a1, t4		# a1 recebe o endereço da coluna atual	
+				li a2, 23		# número de colunas da imagem 
+				li a3, 23		# número de linhas da imagem 
+				call PRINT_IMG
+
+				j LOOP_TURNO_JOGADOR
+			
+			COLUNA_LIVRE:
 			
 			# Seleciona a coluna escolhida
 			mv a0, t5		# t5 tem o endereço da imagem de seleção com a cor do jogador
@@ -133,7 +162,29 @@ TURNO_JOGADOR:
 			j LOOP_TURNO_JOGADOR
 			
 	FIM_LOOP_TURNO_JOGADOR:
+
+	# Decrementando a quantidade de peças restantes na coluna selecionada, porém somente
+	# se o número de peças restantes for != 0
+	slli t0, t6, 2		# multiplica t6 por 4, já que cada word tem 4 bytes
+	add t0, t0, s2		# passa para t0 o endereço da coluna atual, de acordo com o vetor de colunas em s2
+	lw t1, 0(t0)		# pega o valor armazendo no vetor de colunas (numero de peças restantes)
 	
+		# Se o numero de peças restantes for 0 não faz nada e reinicia o procedimento
+		beq t1, zero, LOOP_TURNO_JOGADOR
+	
+	addi t1, t1, -1		# decrementa o numero de peças restantes
+	sw t1, 0(t0)		# armazena o valor no vetor de colunas
+	
+	# Se com esse movimento a coluna não pode mais receber peças é ncessario decrementar o 
+	# numero de colunas livres
+	bne t1, zero, JOGADOR_RETIRAR_SELECAO
+		la t0, NUM_COLUNAS_LIVRES	# t0 tem o endereço de NUM_COLUNAS_LIVRES
+		lw t1, 0(t0)			# t1 tem o numero de colunas livres
+		addi t1, t1, -1			# decrementa t1
+		sw t1, 0(t0)			# armazena t1 em NUM_COLUNAS_LIVRES
+	
+	JOGADOR_RETIRAR_SELECAO:	
+				
 	# Agora é necessário retirar a seleção da coluna antes de prosseguir
 	la a0, selecao_colunas	# carrega a imagem em a0
 	addi a0, a0, 8		# pula para onde começa os pixels .data
@@ -209,7 +260,26 @@ TURNO_COMPUTADOR:
 	
 	ret
 
-	COMPUTADOR_REALIZAR_JOGADA:	
+	COMPUTADOR_REALIZAR_JOGADA:
+	# Do retorno dos procedimentos de decisão a0 tem o numero da coluna escolhida
+	
+	slli t0, a0, 2	# multiplica a0 por 4 porque cada word tem 4 bytes
+	add t1, t0, s2	# passa t1 para o endereço da coluna escolhida no vetor de colunas
+	lw t2, 0(t1)	# pega o valor armazenado no vetor de colunas, ou seja, o numero de peças restantes
+	
+	addi t2, t2, -1	# decrementa o numero de peças restantes
+	
+	sw t2, 0(t1)	# armazena o valor atualizado no vetor de colunas		
+	
+	# Se com esse movimento a coluna não pode mais receber peças é ncessario decrementar o 
+	# numero de colunas livres
+	bne t2, zero, COMPUTADOR_COLOCAR_SELECAO
+		la t0, NUM_COLUNAS_LIVRES	# t0 tem o endereço de NUM_COLUNAS_LIVRES
+		lw t1, 0(t0)			# t1 tem o numero de colunas livres
+		addi t1, t1, -1			# decrementa t1
+		sw t1, 0(t0)			# armazena t1 em NUM_COLUNAS_LIVRES
+	
+	COMPUTADOR_COLOCAR_SELECAO:	
 	
 	mv t2, a0	# salva o retorno em t2
 	
@@ -292,12 +362,38 @@ COMPUTADOR_JOGADA_FACIL:
 	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
 	# uma instrução de branch e a saída é sempre para o label 
 	
-	# Escolhe um numero randomico em 0 e 6
-	li a1, 7		# limite superior (nao inclusivo)
+	# Antes de tudo é necessário saber quantas colunas estão livres
+	la t0, NUM_COLUNAS_LIVRES	# t0 tem o endereço de NUM_COLUNAS_LIVRES
+	lw t0, 0(t0)			# t0 tem o numero de colunas livres
+	
+	# Escolhe um numero randomico entre 0 e t0 (numero de colunas livres)
+	# De forma que o retorno a0 representa que o computador "quer" a n-esima coluna livre do tabuleiro
+	mv a1, t0		# limite superior (nao inclusivo)
 	li a7, 42		# syscall RandIntRange
 	ecall
+	
+	addi a0, a0, 1		# é necessario incrementar a0 porque a ecall acima inclui o numero 0
 
-	# a0 tem o retorno da ecall acima
+	# Agora é necessário procurar qual é a n-esima coluna livre
+	
+	li t1, -1	# numero da coluna que está sendo analisada	
+	
+	LOOP_ENCONTRAR_COLUNA_COMPUTADOR:
+		addi t1, t1, 1	# incrementa o numero da coluna sendo analisada
+		
+		slli t2, t1, 2	# multiplica t1 por 4 porque cada word tem 4 bytes
+		add t2, t2, s2	# passa t2 para o endereço da coluna atual no vetor de colunas
+		lw t2, 0(t2)	# pega o valor armazenado no vetor de colunas, ou seja, o numero de peças restantes
+		
+		# Se t2 == 0 então a coluna não está livre e não deve ser levada em conta na contagem de a0
+		beq t2, zero, LOOP_ENCONTRAR_COLUNA_COMPUTADOR	
+			addi a0, a0, -1		# decrementa o numero de colunas livres encontradas
+		
+		# o loop termina ao encontrar a n-esima coluna livre, ou seja, quando a0 == 0				
+		bne a0, zero, LOOP_ENCONTRAR_COLUNA_COMPUTADOR
+		
+	mv a0, t1	# ao terminar o loop t1 vai ter o numero da n-esima coluna livre, ou seja,
+			# a coluna escolhida pelo computador
 	
 	j COMPUTADOR_REALIZAR_JOGADA		
 	

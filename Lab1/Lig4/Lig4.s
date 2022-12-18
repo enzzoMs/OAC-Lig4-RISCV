@@ -1,3 +1,13 @@
+.data
+
+# Esse vetor guarda o número de peças que ainda podem ser inseridas em cada uma das sete colunas do tabuleiro
+# o vetor tem seu conteúdo constantemente atualizado ao longo do jogo
+COLUNAS_PECAS_RESTANTES: .word 5, 5, 5, 5, 5, 5, 5
+
+# Abaixo é armazenado o numero de colunas livres, ou seja, que ainda podem receber peças.
+# Inicialmente todas as 7 colunas estão livres
+NUM_COLUNAS_LIVRES: .word 7
+
 .text
 
 # ====================================================================================================== # 
@@ -18,6 +28,8 @@
 #		[ 0 ] = FACIL										 # 
 #		[ 1 ] = MEDIO										 # 
 #		[ 2 ] = DIFICIL										 #
+#	s2 = tem o endereço base do vetor COLUNAS_PECAS_RESTANTES					 #	
+#													 #
 #													 #											 
 # ====================================================================================================== #
 # Observações:											         #
@@ -28,6 +40,9 @@
 # voltar até esse arquivo.										 #
 # 													 #
 # ====================================================================================================== #
+
+la s2, COLUNAS_PECAS_RESTANTES
+
 
 call INICIALIZAR_MENU_INICIAL		# Chama o procedimento em menu_inicial.s
 
