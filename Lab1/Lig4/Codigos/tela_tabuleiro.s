@@ -27,8 +27,8 @@ INICIALIZAR_TABULEIRO:
 	
 	# Calculando o endereço onde colocar a dificuldade no menu
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
-		li a1, 104		# a1 = número da coluna onde começa a imagem = 104
-		li a2, 10		# a1 = número da linha onde começa a imagem  = 10
+		li a1, 106		# a1 = número da coluna onde começa a imagem = 106
+		li a2, 9		# a1 = número da linha onde começa a imagem  = 9
 		call CALCULAR_ENDERECO	
 
 	mv a1, a0			# move o endereço retornado para a1
@@ -36,7 +36,7 @@ INICIALIZAR_TABULEIRO:
 	la a0, texto_dificuldades	# carrega a imagem em a0	
 	addi a0, a0, 8			# pula para onde começa os pixels no .data
 	
-	li t0, 300		# para encontrar o texto da dificuldade escolhida pelo jogador
+	li t0, 270		# para encontrar o texto da dificuldade escolhida pelo jogador
 	mul t0, s1, t0		# basta fazer essa multiplicaçaõ. t0 tem a quantidade de pixels
 				# entre um texto e outro, de forma que o valor de s1 (dificuldade 
 	add a0, a0, t0		# escolhida) vai determinar quantos pixels é necessário pular para
@@ -46,7 +46,7 @@ INICIALIZAR_TABULEIRO:
 		# a0 tem o endereço da imagem 
 	 	# a1 tem o endereço de onde a imagem deve ser renderizada
 		li a2, 30 			# numero de colunas da imagem
-		li a3, 10 			# numero de linhas da imagem
+		li a3, 9 			# numero de linhas da imagem
 		call PRINT_IMG
 	
 	# Agora é precisa imprimir a imagem das peças no menu
@@ -54,7 +54,7 @@ INICIALIZAR_TABULEIRO:
 	la t2, pecas_menu		# carrega a imagem base em a0
 	addi t2, t2, 8			# pula para onde começa os pixels no .data
 	
-	addi t3, t2, 182		# passa t3 para a próxima imagem
+	addi t3, t2, 110		# passa t3 para a próxima imagem
 	
 	# De acordo com o acima t2 tem o endereço da peça VERMELHA e t3 da peça AMARELA
 	# Agora é necessário decidir qual é a peça do jogador e qual é do computador
@@ -70,8 +70,8 @@ INICIALIZAR_TABULEIRO:
 	
 	# Calculando o endereço onde colocar a cor da peça do jogador no menu
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
-		li a1, 260		# a1 = número da coluna onde começa a imagem = 260
-		li a2, 8		# a1 = número da linha onde começa a imagem  = 8
+		li a1, 258		# a1 = número da coluna onde começa a imagem = 258
+		li a2, 9		# a1 = número da linha onde começa a imagem  = 9
 		call CALCULAR_ENDERECO	
 
 	mv a1, a0			# move o endereço retornado para a1
@@ -79,14 +79,14 @@ INICIALIZAR_TABULEIRO:
 	# Imprime a peça no menu
 		mv a0, t2 		# move para a0 o endereço de t2
 	 	# a1 tem o endereço de onde a imagem deve ser renderizada
-		li a2, 14 			# numero de colunas da imagem
-		li a3, 13 			# numero de linhas da imagem
+		li a2, 11 			# numero de colunas da imagem
+		li a3, 10 			# numero de linhas da imagem
 		call PRINT_IMG
 
 	# Calculando o endereço onde colocar a cor da peça do computador no menu
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
 		li a1, 282		# a1 = número da coluna onde começa a imagem = 282
-		li a2, 29		# a1 = número da linha onde começa a imagem  = 29
+		li a2, 27		# a1 = número da linha onde começa a imagem  = 27
 		call CALCULAR_ENDERECO	
 
 	mv a1, a0			# move o endereço retornado para a1
@@ -94,8 +94,8 @@ INICIALIZAR_TABULEIRO:
 	# Imprime a peça no menu
 		mv a0, t3 		# move para a0 o endereço de t3
 	 	# a1 tem o endereço de onde a imagem deve ser renderizada
-		li a2, 14 		# numero de colunas da imagem
-		li a3, 13 		# numero de linhas da imagem
+		li a2, 11 		# numero de colunas da imagem
+		li a3, 10 		# numero de linhas da imagem
 		call PRINT_IMG
 
 	lw ra, (sp)		# desempilha ra

@@ -5,8 +5,8 @@
 # ------------------------------------------------------------------------------------------------------ #
 # 													 #
 # Código responsável por comandar o esquema de turnos do jogo, possuindo procedimentos tanto para o      #
-# turno do jogador, quanto para o turno do computador, coordenando a lógica para a inserção de peças     # 
-# no tabuleiro											         # 
+# turno do jogador, quanto para o turno do computador, coordenando a lógica para a inserção e 		 #
+# renderização de peças no tabuleiro.									 #		         # 
 #													 #
 # ====================================================================================================== #
 
@@ -21,7 +21,7 @@ TURNO_JOGADOR:
 	
 	# Calculando o endereço onde começa a imagem da primeira seleção de coluna
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
-		li a1, 60		# a1 = número da coluna onde começa a imagem = 60
+		li a1, 59		# a1 = número da coluna onde começa a imagem = 59
 		li a2, 52		# a1 = número da linha onde começa a imagem  = 52
 		call CALCULAR_ENDERECO	
 	
@@ -29,7 +29,7 @@ TURNO_JOGADOR:
 	
 	# Calculando o endereço onde começa a imagem da ultima seleção de coluna
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
-		li a1, 240		# a1 = número da coluna onde começa a imagem = 240
+		li a1, 239		# a1 = número da coluna onde começa a imagem = 239
 		li a2, 52		# a1 = número da linha onde começa a imagem  = 52
 		call CALCULAR_ENDERECO	
 	
@@ -54,8 +54,8 @@ TURNO_JOGADOR:
 	
 	# Calcula o endereço da secção TURNO do tabuleiro
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
-		li a1, 174		# a1 = número da coluna onde começa a imagem = 174
-		li a2, 220		# a1 = número da linha onde começa a imagem  = 220
+		li a1, 175		# a1 = número da coluna onde começa a imagem = 175
+		li a2, 224		# a1 = número da linha onde começa a imagem  = 224
 		call CALCULAR_ENDERECO	
 	
 	mv a1, a0		# move para a1 o endereço retornado
@@ -63,7 +63,7 @@ TURNO_JOGADOR:
 	la a0, pecas_menu	# carrega a imagem em a0	
 	addi a0, a0, 8		# pula para onde começa os pixels no .data
 	
-	li t0, 182		# para encontrar a imagem da peça escolhida pelo jogador
+	li t0, 110		# para encontrar a imagem da peça escolhida pelo jogador
 	mul t0, s0, t0		# basta fazer essa multiplicaçaõ. t0 tem a quantidade de pixels
 				# entre uma imagem e outra, de forma que o valor de s0 (cor 
 	add a0, a0, t0		# escolhida) vai determinar quantos pixels é necessário pular para
@@ -72,8 +72,8 @@ TURNO_JOGADOR:
 	# Imprime na parte inferior da tela, na secção TURNO, a imagem da peça do jogador
 	# a0 tem o endereço da imagem
 	# a1 tem o endereço de onde imprimir a imagem
-	li a2, 14		# número de colunas da imagem 
-	li a3, 13		# número de linhas da imagem 
+	li a2, 11		# número de colunas da imagem 
+	li a3, 10		# número de linhas da imagem 
 	call PRINT_IMG
 	
 	li t6, 0		# t6 guarda o numero da coluna (de 0 a 6) atualmente selecionada,
@@ -227,8 +227,8 @@ TURNO_COMPUTADOR:
 	
 	# Calcula o endereço da secção TURNO do tabuleiro
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
-		li a1, 174		# a1 = número da coluna onde começa a imagem = 174
-		li a2, 220		# a1 = número da linha onde começa a imagem  = 220
+		li a1, 175		# a1 = número da coluna onde começa a imagem = 175
+		li a2, 224		# a1 = número da linha onde começa a imagem  = 224
 		call CALCULAR_ENDERECO	
 	
 	mv a1, a0		# move para a1 o endereço retornado
@@ -238,7 +238,7 @@ TURNO_COMPUTADOR:
 	
 	xori t0, s0, 1		# t0 recebe o inverso de s0
 	
-	li t1, 182		# para encontrar a imagem da peça do computador basta fazer
+	li t1, 110		# para encontrar a imagem da peça do computador basta fazer
 	mul t1, t0, t1		# essa multiplicaçaõ. t1 tem a quantidade de pixels
 				# entre uma imagem e outra, de forma que o inverso de s0 (cor 
 	add a0, a0, t1		# escolhida pelo jogador) vai determinar quantos pixels é necessário 
@@ -247,8 +247,8 @@ TURNO_COMPUTADOR:
 	# Imprime na parte inferior da tela, na secção TURNO, a imagem da peça do computador
 	# a0 tem o endereço da imagem
 	# a1 tem o endereço de onde imprimir a imagem
-	li a2, 14		# número de colunas da imagem 
-	li a3, 13		# número de linhas da imagem 
+	li a2, 11		# número de colunas da imagem 
+	li a3, 10		# número de linhas da imagem 
 	call PRINT_IMG
 	
 	# Decide qual procedimento chamar de acordo com a dificuldade
@@ -285,7 +285,7 @@ TURNO_COMPUTADOR:
 	
 	# Calculando o endereço onde começa a imagem da primeira seleção de coluna
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
-		li a1, 60		# a1 = número da coluna onde começa a imagem = 60
+		li a1, 59		# a1 = número da coluna onde começa a imagem = 59
 		li a2, 52		# a1 = número da linha onde começa a imagem  = 52
 		call CALCULAR_ENDERECO	
 	

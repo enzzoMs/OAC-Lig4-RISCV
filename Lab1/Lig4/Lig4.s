@@ -44,12 +44,16 @@ NUM_COLUNAS_LIVRES: .word 7
 la s2, COLUNAS_PECAS_RESTANTES
 
 
-call INICIALIZAR_MENU_INICIAL		# Chama o procedimento em menu_inicial.s
+call INICIALIZAR_MENU_INICIAL		# Chama o procedimento em tela_menu_inicial.s
 
-call INICIALIZAR_TABULEIRO		# Chama o procedimento em tabuleiro.s
+call INICIALIZAR_TABULEIRO		# Chama o procedimento em tela_tabuleiro.s
 
 LOOP_PRINCIPAL_JOGO:
+	call VERIFICAR_FIM_DE_JOGO	# Chama o procedimento em fim_de_jogo.s
+	
 	call TURNO_JOGADOR		# Chama o procedimento em movimentos_turnos.s
+	
+	call VERIFICAR_FIM_DE_JOGO	# Chama o procedimento em fim_de_jogo.s
 	
 	call TURNO_COMPUTADOR		# Chama o procedimento em movimentos_turnos.s
 	
@@ -58,7 +62,8 @@ LOOP_PRINCIPAL_JOGO:
 # ====================================================================================================== #
 
 .data
-	.include "Codigos/menu_inicial.s"
-	.include "Codigos/tabuleiro.s"
+	.include "Codigos/tela_menu_inicial.s"
+	.include "Codigos/tela_tabuleiro.s"
 	.include "Codigos/movimentos_turnos.s"
+	.include "Codigos/fim_de_jogo.s"
 	.include "Codigos/procedimentos_auxiliares.s"
