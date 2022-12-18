@@ -43,6 +43,7 @@ NUM_COLUNAS_LIVRES: .word 7
 
 la s2, COLUNAS_PECAS_RESTANTES
 
+LIG4_MAIN:
 
 call INICIALIZAR_MENU_INICIAL		# Chama o procedimento em tela_menu_inicial.s
 
@@ -58,7 +59,8 @@ LOOP_PRINCIPAL_JOGO:
 	call TURNO_COMPUTADOR		# Chama o procedimento em movimentos_turnos.s
 	
 	j  LOOP_PRINCIPAL_JOGO
-	
+
+			
 # ====================================================================================================== #
 
 .data
