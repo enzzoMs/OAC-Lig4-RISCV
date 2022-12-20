@@ -177,14 +177,19 @@ TURNO_JOGADOR:
 	
 	# Se com esse movimento a coluna não pode mais receber peças é ncessario decrementar o 
 	# numero de colunas livres
-	bne t1, zero, JOGADOR_RETIRAR_SELECAO
+	bne t1, zero, JOGADOR_INSERIR_PECA
 		la t0, NUM_COLUNAS_LIVRES	# t0 tem o endereço de NUM_COLUNAS_LIVRES
 		lw t1, 0(t0)			# t1 tem o numero de colunas livres
 		addi t1, t1, -1			# decrementa t1
 		sw t1, 0(t0)			# armazena t1 em NUM_COLUNAS_LIVRES
 	
-	JOGADOR_RETIRAR_SELECAO:	
-				
+	JOGADOR_INSERIR_PECA:	
+	# Atualiza a matriz do tabuleiro
+	addi a0, s0, 1	# incrementa s0 de forma que a0 == 1 se a peça escolhida foi VERMELHA e a0 == 2 caso
+			# a cor escolhida foi AMAARELA	
+	mv a1, t6	# move para a1 o valor da coluna selecionada
+	call ATUALIZAR_MATRIZ_TABULEIRO					
+								
 	# Agora é necessário retirar a seleção da coluna antes de prosseguir
 	la a0, selecao_colunas	# carrega a imagem em a0
 	addi a0, a0, 8		# pula para onde começa os pixels .data
@@ -263,6 +268,7 @@ TURNO_COMPUTADOR:
 	COMPUTADOR_REALIZAR_JOGADA:
 	# Do retorno dos procedimentos de decisão a0 tem o numero da coluna escolhida
 	
+	# Atualiza o numero de posições livres para a coluna escolhida no vetor de colunas
 	slli t0, a0, 2	# multiplica a0 por 4 porque cada word tem 4 bytes
 	add t1, t0, s2	# passa t1 para o endereço da coluna escolhida no vetor de colunas
 	lw t2, 0(t1)	# pega o valor armazenado no vetor de colunas, ou seja, o numero de peças restantes
@@ -281,7 +287,14 @@ TURNO_COMPUTADOR:
 	
 	COMPUTADOR_COLOCAR_SELECAO:	
 	
-	mv t2, a0	# salva o retorno em t2
+	mv t4, a0	# salva a coluna escolhida em t4
+	
+	# Atualiza a matriz do tabuleiro
+	xori t0, s0, 1	# inverte o valor de s0 e soma 1 de modo que a0 == 1 se a peça do computador for 
+ 	addi a0, t0, 1	# VERMELHA e a0 == 2 se for AMARELA
+	mv a1, t4	# move para a1 o valor da coluna selecionada
+	call ATUALIZAR_MATRIZ_TABULEIRO	
+	
 	
 	# Calculando o endereço onde começa a imagem da primeira seleção de coluna
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
@@ -289,12 +302,12 @@ TURNO_COMPUTADOR:
 		li a2, 52		# a1 = número da linha onde começa a imagem  = 52
 		call CALCULAR_ENDERECO	
 	
-	li t3, 30 		# t2 tem a quantidade de pixels de diferença entre uma coluna e outra
+	li t3, 30 		# t3 tem a quantidade de pixels de diferença entre uma coluna e outra
 		
-	mul t2, t2, t3		# através dessa multiplicação decide quantos pixels tem que ser pulados 
+	mul t4, t4, t3		# através dessa multiplicação decide quantos pixels tem que ser pulados 
 				# para encontrar o endereço da coluna escolhida pelo computador
 	
-	add a1, a0, t2		# passa o endereço de a1 para o endereço da coluna escolhida pelo computador
+	add a1, a0, t4		# passa o endereço de a1 para o endereço da coluna escolhida pelo computador
 		
 	
 	la t0, selecao_colunas		# carrega a imagem em t5	
@@ -532,6 +545,39 @@ DESCER_PECA:
 	
 # ====================================================================================================== #
 
+ATUALIZAR_MATRIZ_TABULEIRO:
+	# Procedimento que atualiza a matriz do tabuleiro com um novo valor de peça
+	# Argumentos:
+	#	a0 = valor da peça, com 1 = peça vermelha e 2 = peça amarela
+	# 	a1 = numero da coluna onde a peça foi inserida
+	
+	slli a1, a1, 2		# multiplica a1 por 4 porque cada word tem 4 bytes
+	
+	add t0, a1, s3		# passa t0 para o endereço, na matriz do tabuleiro, da primeira posição
+				# da coluna onde a peça foi inserida
+	
+	li t3, 4		# t3 recebe o numero maximo de linhas a serem analisadas
+	
+	# O loop abaixo vai encontrar a ultima posição disponivel na coluna
+	LOOP_ATUALIZAR_MATRIZ:
+		addi t1, t0, 28		# passa para t1 a posição no tabuleiro que está abaixo de t0 
+		
+		lw t2, 0(t1)		# pega o valor dessa posição do  tabuleiro
+		
+		# verifica se essa posição está livre, caso sim termina o loop
+		bne t2, zero, FIM_LOOP_ATUALIZAR_MATRIZ
+		
+		addi t0, t0, 28		# passa t0 para a posição abaixo no tabuleiro
+		addi t3, t3, -1		# decrementa t3
+		
+		bne t3, zero, LOOP_ATUALIZAR_MATRIZ
+	
+	FIM_LOOP_ATUALIZAR_MATRIZ:
+		sw a0, 0(t0)		# armazena o valor da peça no endereço da posição encontrada
+		
+	ret			
+
+# ====================================================================================================== #
 
 .data
 	.include "../Imagens/tabuleiro/selecao_colunas.data"
