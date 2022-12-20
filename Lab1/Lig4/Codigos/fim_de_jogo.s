@@ -359,9 +359,8 @@ REALCAR_GRUPO_DE_PECAS:
 		call REALCAR_PECA
 		
 		# Espera alguns milisegundos	
-			li a7, 32			# selecionando syscall sleep	
 			li a0, 750			# sleep por 750 ms
-			ecall						
+			call SLEEP			# chama o procedimento de sleep						
 		
 		add t4, t4, t3		# atualiza o endereço de t4 para a proxima peça
 		mv a0, t4		# a0 recebe o endereço da proxima peça
@@ -392,8 +391,8 @@ REALCAR_PECA:
 			
 			# se o pixel nao for preto nada deve acontecer
 			bne t2, zero, NAO_REALCAR_PECA
-				li t2, 0x00D8FF	# t2 = cor que será usada para realçar as peças
-				sb t2, 0(a0)	# muda o pixel de preto para a cor em t2
+				li t2, 0xFFFFFFFF	# t2 = cor que será usada para realçar as peças
+				sb t2, 0(a0)		# muda o pixel de preto para a cor em t2
 			
 			NAO_REALCAR_PECA:
 		

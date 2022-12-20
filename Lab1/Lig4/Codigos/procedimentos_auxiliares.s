@@ -94,4 +94,36 @@ VERIFICAR_TECLA_APERTADA:
 	FIM_VERIFICAR_TECLA:					
 		ret
 			
-# ====================================================================================================== #		
+# ====================================================================================================== #	
+
+SLEEP:	
+	# Procedimento que fica em loop, parando a execução do programa, por alguns milissegundos
+	# Argumentos:
+	# 	a0 = durancao em ms do sleep
+	
+	csrr t0, time	# le o tempo atual do sistema
+	add t0, t0, a0	# adiciona a t0 a durancao do sleep
+	
+	LOOP_SLEEP:
+		csrr t1, time			# le o tempo do sistema
+		blt t1, t0, LOOP_SLEEP 		# se o tempo de t1 < t0 reinicia o loop
+	
+	ret
+				
+# ====================================================================================================== #
+
+ENCONTRAR_NUMERO_RANDOMICO:	
+	# Procedimento que encontra um numero "randomico" entre 0 e a0 (nao inclusivo)
+	# Argumentos:
+	# 	a0 = limite superior para o numero randomico (nao inclusivo)
+	# Retorno:
+	# 	a0 = número "rândomico" entre 0 e a0 - 1
+ 		
+	csrr t0, time	# le o tempo atual do sistema
+	
+	rem a0, t0, a0	# encontra o resto da divisão do tempo do sistema por a0 de modo que a0 
+			# tem um numero entre 0 e a0 - 1 
+			
+	ret
+
+# ====================================================================================================== #			

@@ -330,9 +330,8 @@ TURNO_COMPUTADOR:
 	call PRINT_IMG
 	
 	# Espera alguns milisegundos	
-		li a7, 32			# selecionando syscall sleep	
 		li a0, 1000			# sleep por 1 s
-		ecall
+		call SLEEP			# chama o procedimento sleep
 	
 	# Agora é necessário retirar a seleção da coluna antes de prosseguir
 	la a0, selecao_colunas	# carrega a imagem em a0
@@ -377,15 +376,17 @@ COMPUTADOR_JOGADA_FACIL:
 	
 	# Antes de tudo é necessário saber quantas colunas estão livres
 	la t0, NUM_COLUNAS_LIVRES	# t0 tem o endereço de NUM_COLUNAS_LIVRES
-	lw t0, 0(t0)			# t0 tem o numero de colunas livres
+	lw a0, 0(t0)			# t0 tem o numero de colunas livres
+	
+	# Obs: para o turno do computador é garantido que sempre vai haver pelo menos 1 coluna livre, porque
+	# é o jogador que coloca a ultima peça possível no tabuleiro e aí acontece um empate
 	
 	# Escolhe um numero randomico entre 0 e t0 (numero de colunas livres)
 	# De forma que o retorno a0 representa que o computador "quer" a n-esima coluna livre do tabuleiro
-	mv a1, t0		# limite superior (nao inclusivo)
-	li a7, 42		# syscall RandIntRange
-	ecall
+	call ENCONTRAR_NUMERO_RANDOMICO
 	
-	addi a0, a0, 1		# é necessario incrementar a0 porque a ecall acima inclui o numero 0
+	addi a0, a0, 1		# é necessario incrementar a0 porque o ENCONTRAR_NUMERO_RANDOMICO acima 
+				# inclui o numero 0
 
 	# Agora é necessário procurar qual é a n-esima coluna livre
 	
@@ -440,7 +441,7 @@ DESCER_PECA:
 		# está livre
 		bne t0, t1, FIM_LOOP_DESCER_PECA	
 		
-		li t0, 32 	# para descer a peça para o slot abaixo é necessário realizar 32 loops
+		li t2, 32 	# para descer a peça para o slot abaixo é necessário realizar 32 loops
 				# e em cada um a peça é movida um pixel para baixo
 		
 		j DESCER_PECA_SLOT						
@@ -448,20 +449,22 @@ DESCER_PECA:
 	LOOP_DESCER_PECA:
 		# Para descer a peça em uma posição é necessário saber se o espaço está desocupado
 	
-		li t0, 8010		# somando 8010 ao endereço de a1 podemos encontrar o endreço
+		li t0, 8010		# somando 8010 ao endereço de a1 podemos encontrar o endereço
 		add t0, a1, t0		# de inicio do slot abaixo do atual
 		
 		lb t0, 0(t0)
 	
+		li t1, 82		# t1 tem o valor da cor de fundo da tela
+			
 		# Se o valor do pixel apontado por t0 não for igual a t1 então o espaço não
 		# está livre
 		bne t0, t1, FIM_LOOP_DESCER_PECA	
 		
-		li t0, 26 	# para descer a peça para o slot abaixo é necessário realizar 26 loops
+		li t2, 26 	# para descer a peça para o slot abaixo é necessário realizar 26 loops
 				# e em cada um a peça é movida um pixel para baixo
 				
 		DESCER_PECA_SLOT:
-		li t2, 19		# t2 = numero de linhas da imagem da peça
+		li t0, 19		# t0 = numero de linhas da imagem da peça
 		
 		DESCER_PECA_LINHAS:
 		li t3, 19		# t3 = numero de colunas da imagem da peça
@@ -486,20 +489,20 @@ DESCER_PECA:
 			addi a1, a1, 1				# vai para o próximo pixel do bitmap
 			bne t3, zero, DESCER_PECA_COLUNAS	# reinicia o loop se t3 != 0
 			
-		addi t2, t2, -1			# decrementando o numero de linhas restantes
+		addi t0, t0, -1			# decrementando o numero de linhas restantes
 		addi a1, a1, -19		# volta o endereço do bitmap pelo numero de colunas impressas
 		addi a1, a1, 320			# passa o endereço do bitmap para a proxima linha
-		bne t2, zero, DESCER_PECA_LINHAS	# reinicia o loop se t2 != 0
+		bne t0, zero, DESCER_PECA_LINHAS	# reinicia o loop se t0 != 0
 		
 		# Antes de continuar é preciso limpar o rastro deixado pelo sprite antigo da peça
 		# Para isso o loop abaixo vai limpar a linha anterior ao novo sprite
 		
 		li t1, 82		# t1 tem o valor da cor de fundo da tela
 		
-		li t2, 19		# t3 = numero de colunas da imagem da peça
+		li t0, 19		# t0 = numero de colunas da imagem da peça
 		
 		mv a0, t5		# volta a0 para o valor salvo em t5
-		lb t3, 10(a0)		# t2 tem o valor da cor que vai ser limpa
+		lb t3, 10(a0)		# t3 tem o valor da cor que vai ser limpa, ou seja, a cor do topo da peça
 				
 		addi a1, t6, -320	# volta a1 para a linha anterior ao endereço salvo em t6
 		
@@ -513,25 +516,25 @@ DESCER_PECA:
 				sb t1, 0(a1)		# pega o pixel de t1 (fundo da tela) e coloca no bitmap
 		
 			NAO_LIMPAR:
-			addi t2, t2, -1				# decrementa o numero de colunas restantes
+			addi t0, t0, -1				# decrementa o numero de colunas restantes
 			addi a1, a1, 1					# vai para o próximo pixel do bitmap
-			bne t2, zero, LOOP_COLUNAS_LIMPAR_RASTRO	# reinicia o loop se t3 != 0
-	
-		addi t0, t0, -1		# decrementa o numero de loops restantes
+			bne t0, zero, LOOP_COLUNAS_LIMPAR_RASTRO	# reinicia o loop se t0 != 0
 	
 		addi a1, t6, 320	# volta a1 para o valor salvo em t6 + 320
 					# ou seja, passa a1 para o valor de t6 na proxima linha
 					
 		mv t6, a1		# atualiza o valor de t6
 		
-		bne t0, zero, DESCER_PECA_SLOT	# reinicia o loop se t0 != 0
 		
 		# Espera alguns milisegundos	
-		li a7, 32			# selecionando syscall sleep	
-		li a0, 100			# sleep por 100 ms
-		ecall
+		li a0, 6			# sleep por 6 ms
+		call SLEEP			# chama o procedimento SLEEP		
 		
-		mv a0, t5		# volta a0 para o valor salvo em t5
+		mv a0, t5		# volta a0 para o valor salvo em t5	
+		
+		addi t2, t2, -1		# decrementa o numero de loops restantes
+		
+		bne t2, zero, DESCER_PECA_SLOT	# reinicia o loop se t2 != 0
 		
 		j LOOP_DESCER_PECA	
 		
