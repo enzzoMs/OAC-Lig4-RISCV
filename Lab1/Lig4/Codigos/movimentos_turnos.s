@@ -263,7 +263,9 @@ TURNO_COMPUTADOR:
 	li t0, 1
 	beq s1, t0, COMPUTADOR_JOGADA_MEDIO
 		
-	
+	li t0, 2
+	beq s1, t0, COMPUTADOR_JOGADA_DIFICIL
+			
 	# Embora não seja provável, caso s1 tem um valor diferente de 0, 1 ou 2 o procedimento termina		
 	lw ra, (sp)		# desempilha ra
 	addi sp, sp, 4		# remove 1 word da pilha
@@ -396,7 +398,7 @@ COMPUTADOR_JOGADA_MEDIO:
 	# Nesse nível de dificuldade o computador pode fazer dois tipos de movimentos: um defensivo
 	# e um ofensivo. No defensivo ele vai procurar por grupos de 3 peças do jogador e tentar
 	# impedir que um grupo de 4 seja feito botando uma peça no meio do caminho. O computador joga de forma
-	# randômica até que um grupo de 2 de suas peças sejam formados, aí ele joga de maneira ofensiva
+	# randômica até que um grupo de 3 de suas peças sejam formados, aí ele joga de maneira ofensiva
 	# tentando aumentar esse grupo para formar um agrumento de 4 peças. 
 	# Caso seja possível realizar tanto a jogada defensiva quanto a ofensiva ele sempre vai escolher
 	# a defensiva em primeiro lugar. 
@@ -408,6 +410,7 @@ COMPUTADOR_JOGADA_MEDIO:
 	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
 	# uma instrução de branch e a saída é sempre para o label COMPUTADOR_REALIZAR_JOGADA
 	
+	# DEFENSIVA --------------------------------------------------------------------------------
 	# Primeiramente o computador tenta fazer uma jogada defensiva, encontrando grupos de 3 peças
 	# do jogador e impedindo a expansão deles
 	li a6, 3		# vai procurar por grupos do jogador com pelo menos 3 peças
@@ -416,8 +419,75 @@ COMPUTADOR_JOGADA_MEDIO:
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
 	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
-		
+	
+	# OFENSIVA --------------------------------------------------------------------------------	
 	# Se não é possível fazer uma jogada defensiva então o computador tenta uma ofensiva
+	li a6, 3		# vai procurar por grupos do computador com pelo menos 3 peças
+	call ESCOLHER_COLUNA_OFENSIVA
+	
+	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
+	li t0, -1
+	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	
+	# Se nenhum grupo foi encontrado, tanto para a jogada ofensiva quanto defensiva, então
+	# escolhe uma coluna randômicamente 
+	
+	call ESCOLHER_COLUNA_RANDOMICA 
+
+	# pelo retorno do procedimento acima a0 tem o numero da coluna escolhida	
+				
+	j COMPUTADOR_REALIZAR_JOGADA	
+	
+# ====================================================================================================== #
+
+COMPUTADOR_JOGADA_DIFICIL:
+	# Procedimento que decide qual a proxima jogada do computador na dificuldade dificil
+	# A jogada consiste em escolher em qual coluna, de 0 a 6, o computador vai inserir a peça
+	# Nesse nível de dificuldade o computador pode fazer dois tipos de movimentos: um defensivo
+	# e um ofensivo. No defensivo ele vai procurar por grupos de 2 peças do jogador e tentar
+	# impedir que um grupo de 4 seja feito botando uma peça no meio do caminho. O computador joga de forma
+	# randômica até que um grupo de 1 de suas peças sejam formados, aí ele joga de maneira ofensiva
+	# tentando aumentar esse grupo para formar um agrumento de 4 peças. 
+	# Caso seja possível realizar tanto a jogada defensiva quanto a ofensiva ele sempre vai escolher
+	# a defensiva em primeiro lugar. 
+	# 
+	# Retorno:
+	# 	O procedimento sempre vai retornar para COMPUTADOR_REALIZAR_JOGADA com	
+	# 	a0 = um número de 0 a 6 representando a coluna escolhida 
+	
+	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
+	# uma instrução de branch e a saída é sempre para o label COMPUTADOR_REALIZAR_JOGADA
+	
+	# DEFENSIVA --------------------------------------------------------------------------------
+	# Primeiramente o computador tenta fazer uma jogada defensiva, encontrando grupos de 3 peças
+	# do jogador e impedindo a expansão deles
+	li a6, 3		# vai procurar por grupos do jogador com pelo menos 3 peças
+	call ESCOLHER_COLUNA_DEFENSIVA	
+
+	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
+	li t0, -1
+	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+
+	# Se não há grupos de 3 peças então tenta encontrar grupos de 2 peças do jogador e 
+	# impede a expansão deles
+	li a6, 2		# vai procurar por grupos do jogador com pelo menos 2 peças
+	call ESCOLHER_COLUNA_DEFENSIVA	
+
+	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
+	li t0, -1
+	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	
+	
+	# OFENSIVA --------------------------------------------------------------------------------					
+	# Se não é possível fazer uma jogada defensiva então o computador tenta uma ofensiva
+	li a6, 3		# vai procurar por grupos do computador com pelo menos 3 peças
+	call ESCOLHER_COLUNA_OFENSIVA
+	
+	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
+	li t0, -1
+	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+
+	# Se não há grupos de 3 peças então tenta encontrar grupos de 2 peças para expandi-los
 	li a6, 2		# vai procurar por grupos do computador com pelo menos 2 peças
 	call ESCOLHER_COLUNA_OFENSIVA
 	
@@ -425,6 +495,14 @@ COMPUTADOR_JOGADA_MEDIO:
 	li t0, -1
 	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
 	
+	# Se não há grupos de 3 e 2 peças então tenta encontrar grupos de 1 peças para expandi-los
+	li a6, 1		# vai procurar por grupos do computador com pelo menos 1 peças
+	call ESCOLHER_COLUNA_OFENSIVA
+	
+	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
+	li t0, -1
+	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+							
 	# Se nenhum grupo foi encontrado, tanto para a jogada ofensiva quanto defensiva, então
 	# escolhe uma coluna randômicamente 
 	

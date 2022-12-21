@@ -449,7 +449,7 @@ RECOMECAR_JOGO:
 	
 		addi t0, t0, -1		# decrementa o numero de posições do tabuleiro restantes
 		
-		bne t0, zero, LOOP_REINICIAR_MATRIZ_TABULEIRO	# se t0 != 0 reinicia loop
+		bge t0, zero, LOOP_REINICIAR_MATRIZ_TABULEIRO	# se t0 != 0 reinicia loop
 	
 	
 	# O valor de ra empilhado em VERIFICAR_EMPATE ou VERIFICAR_VITORIA_OU_DERROTA não será desimpilhado
