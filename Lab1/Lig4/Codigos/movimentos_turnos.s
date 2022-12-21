@@ -90,6 +90,9 @@ TURNO_JOGADOR:
 		# Neste loop t1 vai receber o endereço da próxima coluna a ser selecionada
 		# dependendo do input do usuário
 		
+		li t0, 'p'			# se 'p' foi apertado reinicia o jogo
+		beq a0, t0, REINICIAR_DADOS
+		
 		li t0, 'a'
 		li a1, -30	# a1 recebe -30 porque é o necessário para acessar o endereço da coluna 
 				# a esquerda da atual

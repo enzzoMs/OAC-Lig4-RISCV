@@ -421,6 +421,7 @@ RECOMECAR_JOGO:
 	li t0, 10				# t0 tem o código da tecla ENTER	
 	bne a0, t0, LOOP_RECOMECAR_JOGO 	# se ENTER foi apertado volta para o inicio do jogo
 	
+	REINICIAR_DADOS:
 	# Reinicia o valor de NUM_COLUNAS_LIVRES para 7
 	la t0, NUM_COLUNAS_LIVRES
 	li t1, 7
@@ -452,7 +453,8 @@ RECOMECAR_JOGO:
 		bge t0, zero, LOOP_REINICIAR_MATRIZ_TABULEIRO	# se t0 != 0 reinicia loop
 	
 	
-	# O valor de ra empilhado em VERIFICAR_EMPATE ou VERIFICAR_VITORIA_OU_DERROTA não será desimpilhado
+	# O valor de ra empilhado em VERIFICAR_EMPATE, VERIFICAR_VITORIA_OU_DERROTA ou TURNO_JOGADOR não 
+	# será desimpilhado
 	addi sp, sp, 4		# remove 1 word da pilha
 	
 	j LIG4_MAIN	# reinicia o jogo
