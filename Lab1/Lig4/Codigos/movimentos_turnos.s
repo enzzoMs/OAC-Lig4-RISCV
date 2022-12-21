@@ -260,6 +260,11 @@ TURNO_COMPUTADOR:
 	
 	beq s1, zero, COMPUTADOR_JOGADA_FACIL
 	
+	li t0, 1
+	beq s1, t0, COMPUTADOR_JOGADA_MEDIO
+		
+	
+	# Embora não seja provável, caso s1 tem um valor diferente de 0, 1 ou 2 o procedimento termina		
 	lw ra, (sp)		# desempilha ra
 	addi sp, sp, 4		# remove 1 word da pilha
 	
@@ -367,12 +372,79 @@ TURNO_COMPUTADOR:
 COMPUTADOR_JOGADA_FACIL:
 	# Procedimento que decide qual a proxima jogada do computador na dificuldade facil
 	# A jogada consiste em escolher em qual coluna, de 0 a 6, o computador vai inserir a peça
-	# Nesse nível de dificuldade a escolha da coluna é randomica
+	# Nesse nível de dificuldade a escolha da coluna é randômica
+	#
 	# Retorno:
+	# 	O procedimento sempre vai retornar para COMPUTADOR_REALIZAR_JOGADA com	
 	# 	a0 = um número de 0 a 6 representando a coluna escolhida 
 	
 	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
-	# uma instrução de branch e a saída é sempre para o label 
+	# uma instrução de branch e a saída é sempre para o label COMPUTADOR_REALIZAR_JOGADA
+	
+	call ESCOLHER_COLUNA_RANDOMICA
+
+	# pelo retorno do procedimento acima a0 tem o numero da coluna escolhida	
+				
+	j COMPUTADOR_REALIZAR_JOGADA		
+	
+	
+# ====================================================================================================== #
+
+COMPUTADOR_JOGADA_MEDIO:
+	# Procedimento que decide qual a proxima jogada do computador na dificuldade médio
+	# A jogada consiste em escolher em qual coluna, de 0 a 6, o computador vai inserir a peça
+	# Nesse nível de dificuldade o computador pode fazer dois tipos de movimentos: um defensivo
+	# e um ofensivo. No defensivo ele vai procurar por grupos de 3 peças do jogador e tentar
+	# impedir que um grupo de 4 seja feito botando uma peça no meio do caminho. O computador joga de forma
+	# randômica até que um grupo de 2 de suas peças sejam formados, aí ele joga de maneira ofensiva
+	# tentando aumentar esse grupo para formar um agrumento de 4 peças. 
+	# Caso seja possível realizar tanto a jogada defensiva quanto a ofensiva ele sempre vai escolher
+	# a defensiva em primeiro lugar. 
+	# 
+	# Retorno:
+	# 	O procedimento sempre vai retornar para COMPUTADOR_REALIZAR_JOGADA com	
+	# 	a0 = um número de 0 a 6 representando a coluna escolhida 
+	
+	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
+	# uma instrução de branch e a saída é sempre para o label COMPUTADOR_REALIZAR_JOGADA
+	
+	# Primeiramente o computador tenta fazer uma jogada defensiva, encontrando grupos de 3 peças
+	# do jogador e impedindo a expansão deles
+	li a6, 3		# vai procurar por grupos do jogador com pelo menos 3 peças
+	call ESCOLHER_COLUNA_DEFENSIVA	
+
+	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
+	li t0, -1
+	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+		
+	# Se não é possível fazer uma jogada defensiva então o computador tenta uma ofensiva
+	li a6, 2		# vai procurar por grupos do computador com pelo menos 2 peças
+	call ESCOLHER_COLUNA_OFENSIVA
+	
+	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
+	li t0, -1
+	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	
+	# Se nenhum grupo foi encontrado, tanto para a jogada ofensiva quanto defensiva, então
+	# escolhe uma coluna randômicamente 
+	
+	call ESCOLHER_COLUNA_RANDOMICA 
+
+	# pelo retorno do procedimento acima a0 tem o numero da coluna escolhida	
+				
+	j COMPUTADOR_REALIZAR_JOGADA	
+	
+# ====================================================================================================== #
+
+ESCOLHER_COLUNA_RANDOMICA:
+	# Procedimento auxiliar COMPUTADOR_JOGADA_FACIL e COMPUTADOR_JOGADA_MEDIO que escolhe randomicamente 
+	# um numero de coluna (0 a 6) que não está cheia
+	#
+	# Retorno:
+	#	a0 = numero de 0 a 6 da coluna escolhida
+	
+	addi sp, sp, -4		# cria espaço para 1 word na pilha
+	sw ra, 0(sp)		# empilha ra
 	
 	# Antes de tudo é necessário saber quantas colunas estão livres
 	la t0, NUM_COLUNAS_LIVRES	# t0 tem o endereço de NUM_COLUNAS_LIVRES
@@ -407,10 +479,342 @@ COMPUTADOR_JOGADA_FACIL:
 		bne a0, zero, LOOP_ENCONTRAR_COLUNA_COMPUTADOR
 		
 	mv a0, t1	# ao terminar o loop t1 vai ter o numero da n-esima coluna livre, ou seja,
-			# a coluna escolhida pelo computador
+			# a coluna escolhida pelo computador		
 	
-	j COMPUTADOR_REALIZAR_JOGADA		
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
 	
+	ret	
+
+# ====================================================================================================== #
+
+ESCOLHER_COLUNA_OFENSIVA:
+	# Procedimento auxiliar a COMPUTADOR_JOGADA_MEDIO e COMPUTADOR_JOGADA_DIFICIL que tem como 
+	# objetivo ajudar o computador a escolher uma coluna de forma ofensiva, ou seja, é verificado se 
+	# existe algum grupo de pelo menos um espaço livre e pelo menos a6 peças do computador na horizontal, 
+	# vertical ou diagonal para que o computador possa expandi-lo
+	# O procedimento sempre parte do ponto de vista que ele será usado somente pelo computador para 
+	# encontrar peças do computador
+	# Argumentos:
+	#	a6 = numero minimo de peças no grupo
+	#
+	# Retorno:
+	#	a0 = se nenhum grupo possível foi encontrado a0 = -1, caso contrário 
+	#	a0 recebe um numero de 0 a 6 representando a coluna escolhida
+	
+	addi sp, sp, -4		# cria espaço para 1 word na pilha
+	sw ra, 0(sp)		# empilha ra
+	
+	li t0, 4	# numero de peças em um grupo
+	
+	sub a6, t0, a6	# a6 - 4 = numero maximo de peças vazias no grupo
+	
+	# Verifica se foi formado algum grupo de pelo menos a6 na horizontal				
+	xori a0, s0, 1	# a0 recebe o inverso da peça do jogador 
+	addi a0, a0, 1	# invertendo o valor de a0 e somando 1 de modo que a0 == 1 se a peça do 
+ 			# computador for VERMELHA e t4 == 2 se for AMARELA
+	li a1, 4	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	mv a2, s3	# a2 recebe o endereço da matriz onde começar a busca
+	li a3, 5	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 4	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado continua o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_OFENSIVA
+	
+	
+	# Verifica se foi formado algum grupo de pelo menos a6 na vertical				
+	xori a0, s0, 1	# a0 recebe o inverso da peça do jogador 
+	addi a0, a0, 1	# invertendo o valor de a0 e somando 1 de modo que a0 == 1 se a peça do 
+ 			# computador for VERMELHA e t4 == 2 se for AMARELA
+	li a1, 28	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	mv a2, s3	# a2 recebe o endereço da matriz onde começar a busca
+	li a3, 2	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 7	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado continua o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_OFENSIVA
+	
+		
+	# Verifica se foi formado algum grupo de pelo menos a6 na diagonal da esquerda para direita				
+	xori a0, s0, 1	# a0 recebe o inverso da peça do jogador 
+	addi a0, a0, 1	# invertendo o valor de a0 e somando 1 de modo que a0 == 1 se a peça do 
+ 			# computador for VERMELHA e t4 == 2 se for AMARELA
+	li a1, 32	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	mv a2, s3	# a2 recebe o endereço da matriz onde começar a busca
+	li a3, 2	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 4	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado continua o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_OFENSIVA
+	
+	
+	# Verifica se foi formado algum grupo de pelo menos a6 na diagonal da direita para a esquerda				
+	xori a0, s0, 1	# a0 recebe o inverso da peça do jogador 
+	addi a0, a0, 1	# invertendo o valor de a0 e somando 1 de modo que a0 == 1 se a peça do 
+ 			# computador for VERMELHA e t4 == 2 se for AMARELA
+	li a1, 24	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	addi a2, s3, 12	# a2 recebe o endereço da matriz onde começar a busca, nesse caso a 1a linha 
+	li a3, 2	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 4	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado termina o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_OFENSIVA
+	
+	li a0, -1	# a0 = -1 significa que nenhum grupo foi encontrado
+
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
+	
+	ret	
+
+	RETORNAR_COLUNA_OFENSIVA:
+	# se um grupo foi encontrado é necessário transformar o retorno a1 de VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	# em um numero de coluna de 0 a 6
+	
+	li t0, 7	# t0 recebe o numero de colunas da matriz
+	
+	sub a1, a1, s3	# a1 recebe a diferença de a1 e o endereço de inicio da matriz
+	srai a1, a1, 2	# divide a1 por 4 porque cada endereço de 4 bytes
+	
+	rem a0, a1, t0	# a0 recebe o resto da divisão de a0 / 7 de modo que a0 tem um numero de 0 a 6
+			# representando a coluna do endereço a1 na matriz do tabuleiro
+			
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
+	
+	ret	
+
+# ====================================================================================================== #
+
+ESCOLHER_COLUNA_DEFENSIVA:
+	# Procedimento auxiliar a COMPUTADOR_JOGADA_MEDIO e COMPUTADOR_JOGADA_DIFICIL que tem como 
+	# objetivo ajudar o computador a escolher uma coluna de forma defensiva, ou seja, é verificado se 
+	# existe algum grupo de pelo menos um espaço livre e pelo menos a6 peças do jogador na horizontal, 
+	# vertical ou diagonal para que o computador possa impedir a sua expansão
+	# O procedimento sempre parte do ponto de vista que ele será usado somente pelo computador para 
+	# encontrar peças do jogador
+	# Argumentos:
+	#	a6 = numero minimo de peças no grupo
+	#
+	# Retorno:
+	#	a0 = se nenhum grupo possível foi encontrado a0 = -1, caso contrário 
+	#	a0 recebe um numero de 0 a 6 representando a coluna escolhida
+	
+	addi sp, sp, -4		# cria espaço para 1 word na pilha
+	sw ra, 0(sp)		# empilha ra
+	
+	li t0, 4	# numero de peças em um grupo
+	
+	sub a6, t0, a6	# a6 - 4 = numero maximo de peças vazias no grupo
+	
+
+	# Verifica se foi formado algum grupo de pelo menos a6 na horizontal				
+	addi a0, s0, 1	# a0 tem o valor da peça do jogador na matriz, ou seja, a0 recebe o valor que 
+			# será procurado para formar grupos. Nesse caso a0 recebe s0 + 1, ou seja, 
+			# se o jogador escolheu VERMELHO a0 recebe 1 e se escolheu AMARELO a0 recebe 2
+	li a1, 4	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	mv a2, s3	# a2 recebe o endereço da matriz onde começar a busca
+	li a3, 5	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 4	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado continua o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_DEFENSIVA
+	
+	
+	# Verifica se foi formado algum grupo de pelo menos a6 na vertical				
+	addi a0, s0, 1	# a0 tem o valor da peça do jogador na matriz, ou seja, a0 recebe o valor que 
+			# será procurado para formar grupos. Nesse caso a0 recebe s0 + 1, ou seja, 
+			# se o jogador escolheu VERMELHO a0 recebe 1 e se escolheu AMARELO a0 recebe 2
+	li a1, 28	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	mv a2, s3	# a2 recebe o endereço da matriz onde começar a busca
+	li a3, 2	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 7	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado continua o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_DEFENSIVA
+	
+		
+	# Verifica se foi formado algum grupo de pelo menos a6 na diagonal da esquerda para direita				
+	addi a0, s0, 1	# a0 tem o valor da peça do jogador na matriz, ou seja, a0 recebe o valor que 
+			# será procurado para formar grupos. Nesse caso a0 recebe s0 + 1, ou seja, 
+			# se o jogador escolheu VERMELHO a0 recebe 1 e se escolheu AMARELO a0 recebe 2
+	li a1, 32	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	mv a2, s3	# a2 recebe o endereço da matriz onde começar a busca
+	li a3, 2	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 4	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado continua o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_DEFENSIVA
+	
+	
+	# Verifica se foi formado algum grupo de pelo menos a6 na diagonal da direita para a esquerda				
+	addi a0, s0, 1	# a0 tem o valor da peça do jogador na matriz, ou seja, a0 recebe o valor que 
+			# será procurado para formar grupos. Nesse caso a0 recebe s0 + 1, ou seja, 
+			# se o jogador escolheu VERMELHO a0 recebe 1 e se escolheu AMARELO a0 recebe 2
+	li a1, 24	# a1 recebe a distancia em bytes que será pulada entre uma posição e outra
+	addi a2, s3, 12	# a2 recebe o endereço da matriz onde começar a busca, nesse caso a 1a linha 
+	li a3, 2	# a3 recebe o numero de linhas a serem analisadas a partir de a2
+	li a4, 4	# a4 recebe o numero de colunas a serem analisadas por cada linha de a3
+	mv a5, a6	# a5 recebe o maximo de posições vazias permitidas no grupo
+	call VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	
+	# se um grupo nao foi formado termina o processo de verificação
+	bne a0, zero, RETORNAR_COLUNA_DEFENSIVA
+	
+	li a0, -1	# a0 = -1 significa que nenhum grupo foi encontrado
+
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
+	
+	ret	
+
+	RETORNAR_COLUNA_DEFENSIVA:
+	# se um grupo foi encontrado é necessário transformar o retorno a1 de VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS
+	# em um numero de coluna de 0 a 6
+	
+	li t0, 7	# t0 recebe o numero de colunas da matriz
+	
+	sub a1, a1, s3	# a1 recebe a diferença de a1 e o endereço de inicio da matriz
+	srai a1, a1, 2	# divide a1 por 4 porque cada endereço de 4 bytes
+	
+	rem a0, a1, t0	# a0 recebe o resto da divisão de a0 / 7 de modo que a0 tem um numero de 0 a 6
+			# representando a coluna do endereço a1 na matriz do tabuleiro
+			
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
+	
+	ret	
+	
+# ====================================================================================================== #
+	
+VERIFICAR_POSSIVEIS_GRUPOS_DE_PECAS:
+	# Procedimento auxiliar a COMPUTADOR_JOGADA_MEDIO e COMPUTADOR_JOGADA_DIFICIL que tem como 
+	# objetivo verificar a partir da matriz do tabuleiro se existe algum POSSIVEL grupo de 4 peças 
+	# de mesma cor 
+	# A diferença desse procedimento para VERIFICAR_GRUPOS_DE_PECAS em fim_de_jogo.s é que esse procedimento
+	# verifica POSSÍVEIS grupos, ou seja, dependo do argumento a5 ele procura grupos de 4 posições no tabuleiro
+	# em que no máximo a5 posições estão vazias e o resto possui peças da mesma cor, retornando o endereço 
+	# na matriz de uma dessas posições vazias para que o computador possa realizar a sua jogada
+	# Esse procedimento só deve ser usado para encontrar POSSIVEIS grupos, ou seja, quando a5 é pelo menos 1
+	
+	# Argumentos:
+	#	a0 = cor de peça que será analisada para identificar os grupos, com:
+	#		[ 1 ] = Vermelho
+	#		[ 2 ] = Amarelo 
+	#	a1 = distância a ser pulada em bytes entre um endereço da matriz e outro para encontrar as
+	#	outras peças, ou seja, é esse argumento que permite escolher se deseja verificar 
+	#	grupos na diagonal, vertical ou horizontal. Por exemplo, se deseja verificar grupos
+	#	na vertical então a1 = 28, porque esse é o valor entre uma posição da matriz e a posição
+	#	na linha imediatamente abaixo 
+	#	a2 = endereço na matriz do tabuleiro de onde a busca deve começar
+	#	a3 = numero de linhas do tabuleiro a serem analisadas a partir de a1
+	#	a4 = numero de colunas do tabuleiro a serem analisadas por cada linha de a3
+	# 	a5 = numero máximo de posições vazias no grupo
+	# Retorno:
+	# 	a0 = 1 se foi detectado um grupo com esses parametros ou 0 caso contrário
+	# 	a1 = se houve um grupo válido com esses parâmetros a1 recebe o endereço, na matriz do 
+	#	tabuleiro, da última posição vazia encontrada no grupo
+	
+	VERIFICAR_POSSIVEIS_GRUPOS_LINHAS:
+		mv t0, a2	# copia de a2 para usar no loop de colunas
+		mv t1, a2	# copia de a2 para usar no loop de colunas
+		
+		mv t2, a4	# copia de a4 para usar no loop de colunas
+		
+		VERIFICAR_POSSIVEIS_GRUPOS_COLUNAS:		
+			mv t3, a5	# copia de a5 para usar no loop de colunas
+			li t4, 4	# t4 = numero de posições a serem analisadas para encontrar um grupo
+			li t6, -1	# t6 vai receber o endereço da ultima posição vazia do grupo. porém
+					# só se essa posição estiver em cima de uma peça ou se for da ultima
+					# linha
+			
+			VERIFICAR_POSSIVEIS_GRUPOS_POSICOES:
+				lw t5, 0(t1)		# t5 recebe o valor armazenado em t1
+			
+				# se t5 != 0 então a posição não está vazia
+				bne t5, zero, POSICAO_NAO_VAZIA	
+					addi t3, t3, -1 # se a posição está vazia decrementa o número de 
+							# máximo de posições vazias permitidas
+					# Se depois desse decremento o numero de máximo de posições
+					# vazias ficar menor do que zero então há mais posições vazias
+					# do que o permitido, então não é necessário verificar mais posições
+					# porque não existe um grupo válido com esses parâmetros 
+					blt t3, zero, FIM_VERIFICAR_POSSIVEIS_GRUPOS_POSICOES
+									
+					addi t5, s3, 112	# t5 recebe o endereço de começo da ultima 
+								# linha da matriz
+					
+					# se o endereço de t1 > t5 então segue o loop						
+					bge t1, t5, POSICAO_VAZIA_VALIDA
+						# se não verifica a posição da linha de baixo
+						lw t5, 28(t1)
+						# se a posição estiver em cima de nada verifica a proxima
+						beq t5, zero, VERIFICAR_PROXIMA_POSICAO 		
+					
+					POSICAO_VAZIA_VALIDA:				
+					mv t6, t1	# salva em t6 o endereço na matriz da posição 
+							# vazia encontrada
+													
+					j VERIFICAR_PROXIMA_POSICAO
+					
+				POSICAO_NAO_VAZIA:
+					# verifica se a peça encontrada é da cor procurada (a0), se não for 
+					# então não é necessário verificar mais posições
+					# porque não existe um grupo válido com esses parâmetros 
+					bne t5, a0, FIM_VERIFICAR_POSSIVEIS_GRUPOS_POSICOES
+			
+			VERIFICAR_PROXIMA_POSICAO:		
+			addi t4, t4, -1		# decrementa o numero de posições a serem analisadas
+			add t1, t1, a1		# passa o endereço de t1 para a proxima posição de acordo com a1
+			bne t4, zero, VERIFICAR_POSSIVEIS_GRUPOS_POSICOES	# reinicia o loop se t4 != 0
+			
+			# se todas as 4 posições foram analisadas e não ocorreu nenhum branch, ou seja, se 
+			# não existem mais posições vazias do que o permitido, todas as outras peças são
+			# da cor procurada (a0) e t6 != -1, ou seja, existe uma posicao vazia valida, então 
+			# um grupo válido foi encontrado
+			
+			li t5, -1
+			bne t6, t5, POSSIVEL_GRUPO_PECAS_DETECTADO	
+		
+			FIM_VERIFICAR_POSSIVEIS_GRUPOS_POSICOES:
+		
+			
+			addi t0, t0, 4		# passa o endereço de t0 para a proxima coluna da matriz
+			mv t1, t0		# atualiza o endereço de t1		
+			addi t2, t2, -1		# decrementa o numero de colunas restantes 
+			bne t2, zero, VERIFICAR_POSSIVEIS_GRUPOS_COLUNAS	# reinica o loop se t2 != 0
+		
+		addi a2, a2, 28		# passa o endereço de a2 para a proxima linha da matriz
+		addi a3, a3, -1		# decrementa o numero de linhas restantes
+		bne a3, zero, VERIFICAR_POSSIVEIS_GRUPOS_LINHAS	# reinica o loop se a3 != 0
+	
+	# se o procedimento chegou até aqui então nenhum grupo válido foi encontrado
+	li a0, 0	# a0 recebe 0 pois nenhum grupo foi detectado
+	
+	ret
+	
+	POSSIVEL_GRUPO_PECAS_DETECTADO:
+		li a0, 1	# a0 recebe 1 porque algum grupo foi encontrado
+		mv a1, t6	# a1 recebe t6 porque t6 tem o endereço na matriz da ultima posição
+				# vazia do grupo
+	
+		ret
+
+
 # ====================================================================================================== #
 
 DESCER_PECA:

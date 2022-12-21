@@ -70,16 +70,16 @@ VERIFICAR_VITORIA_OU_DERROTA:
 	
 	mv t6, a0	# salva o valor de a0 em t6
 	
-	addi t5, s0, 1	# t4 tem o valor da peça do jogador na matriz, ou seja, t4 recebe o valor que 
+	addi t5, s0, 1	# t5 tem o valor da peça do jogador na matriz, ou seja, t4 recebe o valor que 
 			# será procurado para formar grupos. Nesse caso t4 recebe s0 + 1, ou seja, 
 			# se o jogador escolheu VERMELHO t5 recebe 1 e se escolheu AMARELO t4 recebe 2
 	
 	# verifica se o que deve ser analisado é a vitoria do computador ou do jogador
 	beq a0, zero, VERIFICAR_GRUPOS_PECAS_HORIZONTAL
 		# se a0 != 0 o que deve ser analisado é a vitória do computador
-		xori t5, s0, 1	# t0 recebe o valor da peça do jogador 
- 		addi t5, t5, 1	# invertendo o valor de s0 e somando 1 de modo que t4 == 1 se a peça do 
- 				# computador for  VERMELHA e t4 == 2 se for AMARELA
+		xori t5, s0, 1	# t5 recebe o inverso da peça do jogador 
+ 		addi t5, t5, 1	# invertendo o valor de s0 e somando 1 de modo que t5 == 1 se a peça do 
+ 				# computador for VERMELHA e t5 == 2 se for AMARELA
 	
 	VERIFICAR_GRUPOS_PECAS_HORIZONTAL:
 	# Primeiramente verifica se foi formado algum grupo de 4 na horizontal
@@ -184,10 +184,10 @@ VERIFICAR_VITORIA_OU_DERROTA:
 	# é necessario verificar se é para imprimir a mensagem de derrota ou vitoria
 
 	# t1 recebe a mensagem de derrota ou vitoria de acordo com o valor do argumento a0 (salvo em t6)	
-	la t1, mensagem_fim_jogo_vitoria
+	la t2, mensagem_fim_jogo_vitoria
 	
 	beq t6, zero, PRINT_MENSAGEM_VITORIA_DERROTA
-		la t1, mensagem_fim_jogo_derrota	
+		la t2, mensagem_fim_jogo_derrota	
 	
 	PRINT_MENSAGEM_VITORIA_DERROTA:
 	
@@ -200,7 +200,7 @@ VERIFICAR_VITORIA_OU_DERROTA:
 	mv a1, a0		# move para a1 o endereço de onde imprimir a imagem
 	
 	# Imprime a mensagem 
-	mv a0, t1		# move para a0 o endereço da mensagem escolhida anteriormente
+	mv a0, t2		# move para a0 o endereço da mensagem escolhida anteriormente
 	addi a0, a0, 8		# pula para onde começa os pixels .data
 	li a2, 183		# número de colunas da imagem 
 	li a3, 89		# número de linhas da imagem 

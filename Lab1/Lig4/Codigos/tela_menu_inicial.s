@@ -200,9 +200,6 @@ SELECIONAR_OPCOES_MENU:
 	div a0, t0, a5		# a0 recebe a divisão entre o calculado acima e a5, dessa forma, a0 recebe
 				# o valor de qual opção foi selecionada, de acordo com o convencionado
 
-	li a7,1 
-	ecall 
-
 	lw ra, (sp)		# desempilha ra
 	addi sp, sp, 4		# remove 1 word da pilha
 	
