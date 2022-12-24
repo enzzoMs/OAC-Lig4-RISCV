@@ -29,7 +29,36 @@ PRINT_TELA:
 	ret 
 	
 # ====================================================================================================== #
-																	
+
+PRINT_IMG:
+	# Procedimento que imprime imagens de tamanho variado, menores que 320 x 240, no frame de escolha
+	# Argumentos: 
+	# 	a0 = endereço da imagem		
+	# 	a1 = endereço de onde, no frame escolhido, a imagem deve ser renderizada
+	# 	a2 = numero de colunas da imagem
+	#	a3 = numero de linhas da imagem
+	
+	PRINT_IMG_LINHAS:
+		mv t0, a2		# copia do numero de a2 para usar no loop de colunas
+			
+		PRINT_IMG_COLUNAS:
+			lb t1, 0(a0)			# pega 1 pixel do .data e coloca em t1
+			sb t1, 0(a1)			# pega o pixel de t1 e coloca no bitmap
+	
+			addi t0, t0, -1			# decrementa o numero de colunas restantes
+			addi a0, a0, 1			# vai para o próximo pixel da imagem
+			addi a1, a1, 1			# vai para o próximo pixel do bitmap
+			bne t0, zero, PRINT_IMG_COLUNAS	# reinicia o loop se t0 != 0
+			
+		addi a3, a3, -1			# decrementando o numero de linhas restantes
+		sub a1, a1, a2			# volta o endeço do bitmap pelo numero de colunas impressas
+		addi a1, a1, 320		# passa o endereço do bitmap para a proxima linha
+		bne a3, zero, PRINT_IMG_LINHAS	# reinicia o loop se a3 != 0
+			
+	ret
+
+# ====================================================================================================== #
+																																	
 CALCULAR_ENDERECO:
 	# Procedimento que calcula um endereço em um frame ou em uma imagem
 	# Argumentos: 
@@ -65,4 +94,36 @@ VERIFICAR_TECLA_APERTADA:
 	FIM_VERIFICAR_TECLA:					
 		ret
 			
-# ====================================================================================================== #		
+# ====================================================================================================== #	
+
+SLEEP:	
+	# Procedimento que fica em loop, parando a execução do programa, por alguns milissegundos
+	# Argumentos:
+	# 	a0 = durancao em ms do sleep
+	
+	csrr t0, time	# le o tempo atual do sistema
+	add t0, t0, a0	# adiciona a t0 a durancao do sleep
+	
+	LOOP_SLEEP:
+		csrr t1, time			# le o tempo do sistema
+		blt t1, t0, LOOP_SLEEP 		# se o tempo de t1 < t0 reinicia o loop
+	
+	ret
+				
+# ====================================================================================================== #
+
+ENCONTRAR_NUMERO_RANDOMICO:	
+	# Procedimento que encontra um numero "randomico" entre 0 e a0 (nao inclusivo)
+	# Argumentos:
+	# 	a0 = limite superior para o numero randomico (nao inclusivo)
+	# Retorno:
+	# 	a0 = número "rândomico" entre 0 e a0 - 1
+ 		
+	csrr t0, time	# le o tempo atual do sistema
+	
+	rem a0, t0, a0	# encontra o resto da divisão do tempo do sistema por a0 de modo que a0 
+			# tem um numero entre 0 e a0 - 1 
+			
+	ret
+
+# ====================================================================================================== #			

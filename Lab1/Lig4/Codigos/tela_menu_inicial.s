@@ -193,9 +193,12 @@ SELECIONAR_OPCOES_MENU:
 			
 	FIM_SELECIONAR_OPCOES_MENU:
 
-	sub t0, a0, t6		# t6 recebe a diferença entre o endereço da primeira opção e a opção atual
+	sub t0, t5, a4		# t0 recebe a diferença entre o endereço da primeira opção e a opção atual
+	li t1, 320		# divide t0 por 320 para saber quantas linhas de diferença entre a primeira
+	div t0, t0, t1		# opção e a opção selecionada
+	
 	div a0, t0, a5		# a0 recebe a divisão entre o calculado acima e a5, dessa forma, a0 recebe
-				# o valor de qual opção foi selecionada
+				# o valor de qual opção foi selecionada, de acordo com o convencionado
 
 	lw ra, (sp)		# desempilha ra
 	addi sp, sp, 4		# remove 1 word da pilha
