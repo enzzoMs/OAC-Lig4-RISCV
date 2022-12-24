@@ -268,7 +268,8 @@ TURNO_COMPUTADOR:
 		
 	li t0, 2
 	beq s1, t0, COMPUTADOR_JOGADA_DIFICIL
-			
+	
+					
 	# Embora não seja provável, caso s1 tem um valor diferente de 0, 1 ou 2 o procedimento termina		
 	lw ra, (sp)		# desempilha ra
 	addi sp, sp, 4		# remove 1 word da pilha
@@ -385,11 +386,11 @@ COMPUTADOR_JOGADA_FACIL:
 	
 	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
 	# uma instrução de branch e a saída é sempre para o label COMPUTADOR_REALIZAR_JOGADA
-	
+						
 	call ESCOLHER_COLUNA_RANDOMICA
 
 	# pelo retorno do procedimento acima a0 tem o numero da coluna escolhida	
-				
+ 					 				
 	j COMPUTADOR_REALIZAR_JOGADA		
 	
 	
@@ -412,7 +413,7 @@ COMPUTADOR_JOGADA_MEDIO:
 	
 	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
 	# uma instrução de branch e a saída é sempre para o label COMPUTADOR_REALIZAR_JOGADA
-	
+ 						
 	# DEFENSIVA --------------------------------------------------------------------------------
 	# Primeiramente o computador tenta fazer uma jogada defensiva, encontrando grupos de 3 peças
 	# do jogador e impedindo a expansão deles
@@ -421,7 +422,7 @@ COMPUTADOR_JOGADA_MEDIO:
 
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
-	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	bne a0, t0, FIM_COMPUTADOR_JOGADA_MEDIO
 	
 	# OFENSIVA --------------------------------------------------------------------------------	
 	# Se não é possível fazer uma jogada defensiva então o computador tenta uma ofensiva
@@ -430,7 +431,7 @@ COMPUTADOR_JOGADA_MEDIO:
 	
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
-	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	bne a0, t0, FIM_COMPUTADOR_JOGADA_MEDIO
 	
 	# Se nenhum grupo foi encontrado, tanto para a jogada ofensiva quanto defensiva, então
 	# escolhe uma coluna randômicamente 
@@ -438,7 +439,9 @@ COMPUTADOR_JOGADA_MEDIO:
 	call ESCOLHER_COLUNA_RANDOMICA 
 
 	# pelo retorno do procedimento acima a0 tem o numero da coluna escolhida	
-				
+
+FIM_COMPUTADOR_JOGADA_MEDIO:
+ 																																											
 	j COMPUTADOR_REALIZAR_JOGADA	
 	
 # ====================================================================================================== #
@@ -460,7 +463,7 @@ COMPUTADOR_JOGADA_DIFICIL:
 	
 	# Obs: não é necessário salvar o valor de ra, pois a chegada a esse procedimento é através de 
 	# uma instrução de branch e a saída é sempre para o label COMPUTADOR_REALIZAR_JOGADA
-	
+
 	# DEFENSIVA --------------------------------------------------------------------------------
 	# Primeiramente o computador tenta fazer uma jogada defensiva, encontrando grupos de 3 peças
 	# do jogador e impedindo a expansão deles
@@ -469,7 +472,7 @@ COMPUTADOR_JOGADA_DIFICIL:
 
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
-	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	bne a0, t0, FIM_COMPUTADOR_JOGADA_DIFICIL
 
 	# Se não há grupos de 3 peças então tenta encontrar grupos de 2 peças do jogador e 
 	# impede a expansão deles
@@ -478,7 +481,7 @@ COMPUTADOR_JOGADA_DIFICIL:
 
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
-	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	bne a0, t0, FIM_COMPUTADOR_JOGADA_DIFICIL
 	
 	
 	# OFENSIVA --------------------------------------------------------------------------------					
@@ -488,7 +491,7 @@ COMPUTADOR_JOGADA_DIFICIL:
 	
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
-	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	bne a0, t0, FIM_COMPUTADOR_JOGADA_DIFICIL
 
 	# Se não há grupos de 3 peças então tenta encontrar grupos de 2 peças para expandi-los
 	li a6, 2		# vai procurar por grupos do computador com pelo menos 2 peças
@@ -496,7 +499,7 @@ COMPUTADOR_JOGADA_DIFICIL:
 	
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
-	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	bne a0, t0, FIM_COMPUTADOR_JOGADA_DIFICIL
 	
 	# Se não há grupos de 3 e 2 peças então tenta encontrar grupos de 1 peças para expandi-los
 	li a6, 1		# vai procurar por grupos do computador com pelo menos 1 peças
@@ -504,7 +507,7 @@ COMPUTADOR_JOGADA_DIFICIL:
 	
 	# se a0 != -1 significa que algum grupo foi encontrado e a0 tem o valor da coluna escolhida
 	li t0, -1
-	bne a0, t0, COMPUTADOR_REALIZAR_JOGADA
+	bne a0, t0, FIM_COMPUTADOR_JOGADA_DIFICIL
 							
 	# Se nenhum grupo foi encontrado, tanto para a jogada ofensiva quanto defensiva, então
 	# escolhe uma coluna randômicamente 
@@ -512,7 +515,9 @@ COMPUTADOR_JOGADA_DIFICIL:
 	call ESCOLHER_COLUNA_RANDOMICA 
 
 	# pelo retorno do procedimento acima a0 tem o numero da coluna escolhida	
-				
+
+FIM_COMPUTADOR_JOGADA_DIFICIL:
+ 							
 	j COMPUTADOR_REALIZAR_JOGADA	
 	
 # ====================================================================================================== #

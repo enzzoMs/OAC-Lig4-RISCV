@@ -36,7 +36,7 @@ VERIFICAR_EMPATE:
 		call CALCULAR_ENDERECO	
 	
 	mv a1, a0	# move para a1 o endereço de onde imprimir a imagem
-	
+			
 	# Imprime a mensagem de empate 
 	la a0, mensagem_fim_jogo_empate	# carrega a imagem
 	addi a0, a0, 8			# pula para onde começa os pixels .data
@@ -182,7 +182,7 @@ VERIFICAR_VITORIA_OU_DERROTA:
 	
 	ESCOLHE_MENSAGEM_VITORIA_DERROTA:
 	# é necessario verificar se é para imprimir a mensagem de derrota ou vitoria
-
+	
 	# t1 recebe a mensagem de derrota ou vitoria de acordo com o valor do argumento a0 (salvo em t6)	
 	la t2, mensagem_fim_jogo_vitoria
 	
