@@ -106,8 +106,9 @@ SLEEP:
 	
 	LOOP_SLEEP:
 		csrr t1, time			# le o tempo do sistema
-		blt t1, t0, LOOP_SLEEP 		# se o tempo de t1 < t0 reinicia o loop
-	
+		sltu t1, t1, t0			# t1 recebe 1 se (t1 < t0) e 0 caso contrário
+		bne t1, zero, LOOP_SLEEP 		# se o tempo de t1 != 0 reinicia o loop
+		
 	ret
 				
 # ====================================================================================================== #
