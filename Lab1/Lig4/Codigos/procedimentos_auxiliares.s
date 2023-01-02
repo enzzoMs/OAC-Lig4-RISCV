@@ -10,26 +10,71 @@
 # ====================================================================================================== #
 
 PRINT_TELA:
-	# Procedimento que imprime uma imagem de 320 x 240 no frame de escolha
-	# Argumentos: 
-	# 	a0 = endereço da imgagem		
-	# 	a1 = endereço base do frame
+	# Procedimento auxiliar que tem por objetivo usar uma matriz de tiles para imprimir uma imagem
+	# de uma tela 
+	# Cada tela do jogo é dividida em quadrados de 20 x 20, cada um desses quadrados únicos configura 
+	# um tile diferente. Esses tiles são organizados em uma imagem própria de modo que cada 
+	# tile fica um em baixo do outro (ver "../Imagens/menu_inicial/tiles_menu_inicial.bmp" para um exemplo).
+	# Cada tile recebe um número diferente que representa a posição do tile nessa imagem, 
+	# dessa forma, as imagens das áreas podem simplesmente ser codificadas como uma matriz
+	# em que cada elemento representa o número de um tile, com isso, renderizar a imagem de uma
+	# tela se trata apenas de analisar a matriz e encontrar os tiles correspondentes.
+	# Como cada tile tem 20 x 20 eles recebem números de modo que o tile na posição 1
+	# está a (20 * 20) * 1 pixels do ínicio da imagem, o tile na posição 5 está a 
+	# (20 * 10) * 5 pixels do incio, e assim por diante, facilitando o processo de "traduzir" os números
+	# da matriz para o tile correspondente 
+	# Esse procedimento sempre imprime imagens de 320 x 240, ou seja, 16 x 12 tiles
+	# Argumentos:
+	# 	a4 = endereço da matriz de tiles
+	#	a5 = endereço base do frame 0 ou 1 de onde os tiles vão começar a ser impressos
+	# 	a6 = imagem contendo os tiles
+					
+	addi sp, sp, -4		# cria espaço para 1 word na pilha
+	sw ra, 0(sp)		# empilha ra
+																
+	li t2, 400	# t4 recebe 20 * 20 = 400, ou seja, a área de um tile							
 	
-	li t0, 76800		# area total da imagem -> 320 x 240 = 76800 pixels
-	addi a0, a0, 8		# pula para onde começa os pixels no .data
-
-	LOOP_PRINT_IMG: 
-		lw t1, 0(a0)			# pega 4 pixels do .data e coloca em t3
-		sw t1, 0(a1)			# pega os pixels de t3 e coloca no bitmap
-		addi a0, a0, 4			# vai para os próximos pixels da imagem
-		addi a1, a1, 4			# vai para os próximos pixels do bitmap
-		addi t0, t0, -4			# decrementa o contador de pixels restantes
-		bne t0, zero, LOOP_PRINT_IMG	# se t0 != zero -> reinicia o loop
+	# o loop abaixo vai imprimir 16 x 12 tiles
+	
+	li t3, 12		# número de linhas de tiles a serem impressos																													
+																																																																																								
+	PRINT_AREA_LINHAS:
+		li t4, 16		# número de colunas de tiles a serem impressos		
+		mv t5, a5		# copia de a5 para usar no loop de colunas
+				
+		PRINT_AREA_COLUNAS:
+			lb t0, 0(a4)	# pega 1 elemento da matriz de tiles e coloca em t0
 		
-	ret 
+			mul t0, t0, t2  # como dito na descrição do procedimento t0 (número do tile) * (20 * 20)
+					# retorna quantos pixels esse tile está do começo da imagem
+			
+			add a0, a6, t0	# a0 recebe o endereço do tile a ser impresso
+			mv a1, t5	# a1 recebe o endereço de onde imprimir o tile
+			li a2, 20	# a2 = numero de colunas de um tile
+			li a3, 20	# a3 = numero de linhas de um tile
+			call PRINT_IMG
+	
+			addi a4, a4, 1		# vai para o próximo elemento da matriz de tiles
+			addi t5, t5, 20		# pula 20 colunas no bitmap já que o tile impresso tem
+						# 20 colunas de tamanho 
+			
+			addi t4, t4, -1			# decrementando o numero de colunas de tiles restantes
+			bne t4, zero, PRINT_AREA_COLUNAS	# reinicia o loop se t4 != 0
+			
+		li t0, 6400		# t0 recebe 20 (número de linhas impressas)  * 320 (tamanho de uma linha
+					# do bitmap)
+		add a5, a5, t0		# passa o endereço do bitmap para a endereço dos próximos tiles
+
+		addi t3, t3, -1			# decrementando o numero de linhas restantes
+		bne t3, zero, PRINT_AREA_LINHAS	# reinicia o loop se t3 != 0
+			
+	lw ra, (sp)		# desempilha ra
+	addi sp, sp, 4		# remove 1 word da pilha
+	
+	ret
 	
 # ====================================================================================================== #
-
+	
 PRINT_IMG:
 	# Procedimento que imprime imagens de tamanho variado, menores que 320 x 240, no frame de escolha
 	# Argumentos: 

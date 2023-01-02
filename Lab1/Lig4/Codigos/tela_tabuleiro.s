@@ -18,9 +18,12 @@ INICIALIZAR_TABULEIRO:
 	sw ra, 0(sp)		# empilha ra
 	
 	# Imprimindo o tabuleiro no frame 0
-		la a0, tabuleiro		# carrega a imagem
-		li a1, 0xFF000000		# seleciona como argumento o frame 0
-		call PRINT_TELA	
+		la a4, matriz_tiles_tabuleiro		# carregando a imagem da matriz de tiles
+		addi a4, a4, 8				# pula para onde começa os pixels .data
+		li a5, 0xFF000000			# seleciona como argumento o frame 0
+		la a6, tiles_tabuleiro			# carregando a imagem dos tiles
+		addi a6, a6, 8				# pula para onde começa os pixels .data
+		call PRINT_TELA
 
 	# Primeiro é necessário inicializar o menu do tabuleiro com as informações dadas pelo jogador,
 	# nesse caso, a dificuldade e a cor das peças
@@ -106,6 +109,7 @@ INICIALIZAR_TABULEIRO:
 # ====================================================================================================== #
 
 .data
-	.include "../Imagens/tabuleiro/tabuleiro.data"
+	.include "../Imagens/tabuleiro/tiles_tabuleiro.data"
+	.include "../Imagens/tabuleiro/matriz_tiles_tabuleiro.data"
 	.include "../Imagens/tabuleiro/texto_dificuldades.data"
 	.include "../Imagens/tabuleiro/pecas_menu.data"	

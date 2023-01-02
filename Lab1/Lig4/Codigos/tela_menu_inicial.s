@@ -33,10 +33,13 @@ RENDERIZAR_ESCOLHA_COR:
 
 	addi sp, sp, -4		# cria espaço para 1 word na pilha
 	sw ra, (sp)		# empilha ra
-	
+
 	# Imprimindo a tela de seleção de cor no frame 0
-		la a0, menu_inicial_cor_pecas	# carrega a imagem
-		li a1, 0xFF000000		# seleciona como argumento o frame 0
+		la a4, matriz_tiles_menu_inicial_cor_pecas	# carregando a imagem da matriz de tiles
+		addi a4, a4, 8					# pula para onde começa os pixels .data
+		li a5, 0xFF000000				# seleciona como argumento o frame 0
+		la a6, tiles_menu_inicial			# carregando a imagem dos tiles
+		addi a6, a6, 8					# pula para onde começa os pixels .data
 		call PRINT_TELA	
 	
 	# Calculando o endereço onde começa a imagem da opção VERMELHO
@@ -76,10 +79,14 @@ RENDERIZAR_ESCOLHA_DIFICULDADE:
 	addi sp, sp, -4		# cria espaço para 1 word na pilha
 	sw ra, (sp)		# empilha ra
 	
-	# Imprimindo a tela de seleção de cor no frame 0
-		la a0, menu_inicial_dificuldade		# carrega a imagem
-		li a1, 0xFF000000			# seleciona como argumento o frame 0
+	# Imprimindo a tela de seleção de dificuldade no frame 0
+		la a4, matriz_tiles_menu_inicial_dificuldade	# carregando a imagem da matriz de tiles
+		addi a4, a4, 8					# pula para onde começa os pixels .data
+		li a5, 0xFF000000				# seleciona como argumento o frame 0
+		la a6, tiles_menu_inicial			# carregando a imagem dos tiles
+		addi a6, a6, 8					# pula para onde começa os pixels .data
 		call PRINT_TELA	
+	
 	
 	# Calculando o endereço onde começa a imagem da opção FACIL
 		li a0, 0xFF000000	# Selecionando como argumento o frame 0
@@ -258,6 +265,9 @@ RENDERIZAR_OPCAO:
 # ====================================================================================================== #
 
 .data
-	.include "../Imagens/menu_inicial/menu_inicial_cor_pecas.data"
-	.include "../Imagens/menu_inicial/menu_inicial_dificuldade.data"
+	.include "../Imagens/menu_inicial/matriz_tiles_menu_inicial_cor_pecas.data"
+	.include "../Imagens/menu_inicial/matriz_tiles_menu_inicial_dificuldade.data"
+	.include "../Imagens/menu_inicial/tiles_menu_inicial.data"
+	
+
 	
