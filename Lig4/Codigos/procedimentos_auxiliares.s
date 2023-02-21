@@ -167,7 +167,7 @@ ENCONTRAR_NUMERO_RANDOMICO:
  		
 	csrr t0, time	# le o tempo atual do sistema
 	
-	rem a0, t0, a0	# encontra o resto da divisão do tempo do sistema por a0 de modo que a0 
+	remu a0, t0, a0	# encontra o resto da divisão do tempo do sistema por a0 de modo que a0 
 			# tem um numero entre 0 e a0 - 1 
 			
 	ret
