@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img alt="Lig4 Logo" src="./imagens/logo_lig4.png" />
+    <img alt="Lig4 Logo" src="./github_assets/logo_lig4.png" />
 </h1>
 <p align="center">Implementação do jogo Lig4 em Assembly RISC-V.</p>
 
@@ -21,7 +21,7 @@ O projeto consiste em uma recriação do clássico jogo de tabuleiro Lig4 ([Conn
 
 ## Execução
 
-Para executar o jogo é recomendado utilizar a ferramenta [RARS](https://github.com/TheThirdOne/rars) ou o [FPGRARS](https://github.com/LeoRiether/FPGRARS). 
+Para executar o jogo é possível utilizar a ferramenta [RARS](https://github.com/TheThirdOne/rars) ou o [FPGRARS](https://github.com/LeoRiether/FPGRARS), porém o FPGRARS é mais recomendado.
 
 ### Usando o FPGRARS
 
@@ -42,5 +42,18 @@ Nos menus use `w` ou `s` para movimentar entre as opções e `ENTER(↵)` para s
 
 No tabuleiro use `a` ou `d` para escolher uma coluna e `ENTER(↵)` para inserir a peça. Com `p` é possível terminar a partida e voltar para o menu inicial.
 
+---
+
 ## Funcionalidades    
+
+Assim como no jogo original é possível escolher uma entre duas cores de peça para jogar contra o seu adversário. No caso desse projeto o oponente será o próprio programa, que escolhe dinamicamente qual será o seu próximo movimento de acordo com as jogadas do usuário. 
+
+O jogo possui 3 níveis de dificuldade crescente: Fácil, Médio e Díficil, que mudam a maneiro com que esse oponente joga. Na mais fácil o programa escolhe as colunas de forma randômica, mas nas próximas dificuldades o adversário começa a tentar expandir seus grupos de peças ao mesmo tempo que tenta impedir que o jogador ganhe. 
+
+
+<p align="center">
+    <img alt="Gif com gameplay do Lig4" src="./github_assets/lig4_gameplay.gif" >
+</p>
+
+Para jogar ambos escolhem uma das setes colunas do tabuleiro para inserir uma peça, que desce até a última posição livre. Vence quem formar primeiro um grupo de 4 peças da sua cor, seja na diagonal, vertical ou horizontal. Caso nenhum grupo seja formado até que o tabuleiro esteja cheio o jogo termina em empate.
 
