@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img alt="Lig4 Logo" src="./github_assets/logo_lig4.png" />
+    <img alt="Lig4 Logo" src="./readme_assets/logo_lig4.png" />
 </h1>
 <p align="center">Implementação do jogo Lig4 em Assembly RISC-V.</p>
 
@@ -52,7 +52,7 @@ O jogo possui 3 níveis de dificuldade crescente: Fácil, Médio e Díficil, que
 
 
 <p align="center">
-    <img alt="Gif com gameplay do Lig4" src="./github_assets/lig4_gameplay.gif" >
+    <img alt="Gif com gameplay do Lig4" src="./readme_assets/lig4_gameplay.gif" >
 </p>
 
 Para jogar ambos escolhem uma das setes colunas do tabuleiro para inserir uma peça, que desce até a última posição livre. Vence quem formar primeiro um grupo de 4 peças da sua cor, seja na diagonal, vertical ou horizontal. Caso nenhum grupo seja formado até que o tabuleiro esteja cheio o jogo termina em empate.
